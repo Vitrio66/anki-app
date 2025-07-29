@@ -4,39 +4,39 @@ body {
     font-family: sans-serif;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* コンテンツが上から表示されるように */
-    min-height: 100vh; /* 常に最低でも画面高さ分は確保 */
+    align-items: flex-start;
+    min-height: 100vh;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 5px; /* ★調整: bodyのpaddingをさらに詰める */
+    padding: 5px;
     box-sizing: border-box;
-    overflow-y: auto; /* bodyに縦スクロールを明示的に許可 */
-    -webkit-overflow-scrolling: touch; /* iOSでスムーズなスクロール */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .container {
     background-color: #fff;
-    padding: 15px; /* ★調整: containerのpaddingをさらに詰める */
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 98%; /* ★調整: 幅を少し広げる */
-    max-width: 500px; /* ★調整: 最大幅を少し狭める */
-    margin: 10px auto; /* ★調整: 上下のマージンを調整 */
-    min-height: auto; /* コンテンツ量に応じて高さを自動調整 */
-    height: auto; /* 高さを自動調整 */
+    width: 98%;
+    max-width: 500px;
+    margin: 10px auto;
+    min-height: auto;
+    height: auto;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* コンテンツを上から配置 */
+    justify-content: flex-start;
 }
 
 /* 小さい画面でのcontainerの調整 */
 @media (max-width: 480px) {
     .container {
-        padding: 10px; /* ★調整: スマホでのpaddingをさらに詰める */
-        margin: 5px auto; /* ★調整: スマホでの上下マージンをさらに詰める */
-        width: 98%; /* ★調整 */
-        max-width: none; /* ★重要: モバイルでは最大幅の制限をなくす */
+        padding: 10px;
+        margin: 5px auto;
+        width: 98%;
+        max-width: none;
     }
 }
 /* PCでのcontainer (既存) */
@@ -49,20 +49,22 @@ body {
 }
 
 
-/* h1 (タイトル) はHTMLから削除したのでCSSは不要になります */
+/* h1 (タイトル) はHTMLから削除したのでCSSは不要です。 */
+/* もしどこかに「暗記アプリ」のテキストが表示されている場合、それはJavaScriptで動的に追加されているか、またはHTMLのh1以外の要素が原因である可能性が高いです。 */
+/* HTMLでh1タグを削除済みであれば、このCSSは既に適用されません。 */
 
 
 /* 問題文 (#question-text) の調整 */
 #question-text {
-    font-size: 4.5vw; /* ★調整: フォントサイズを維持 */
-    margin-bottom: 12px; /* ★調整: マージンをさらに詰める */
-    color: #333; /* ★調整: 文字色を少し濃く */
+    font-size: 4.5vw;
+    margin-bottom: 12px;
+    color: #333;
     text-align: left;
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.4; /* ★調整: 行の高さを少し詰める */
-    padding: 5px; /* ★追加: 左右に少しパディング */
-    background-color: #e9f5ff; /* ★追加: 背景色をつけて目立たせる */
+    line-height: 1.4;
+    padding: 5px;
+    background-color: #e9f5ff;
     border-radius: 5px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
@@ -70,9 +72,9 @@ body {
 /* 小さい画面での#question-textの固定サイズ */
 @media (max-width: 480px) {
     #question-text {
-        font-size: 16px; /* ★調整: 固定サイズを維持 */
-        margin-bottom: 8px; /* ★調整: マージンをさらに詰める */
-        padding: 8px; /* ★調整 */
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding: 8px;
     }
 }
 /* PCでの#question-text */
@@ -88,10 +90,10 @@ body {
 /* フォーム用スタイル (モバイルでの調整) - 問題追加フォームのラベルや入力欄 */
 .form-group label {
     font-size: 3.5vw;
-    margin-top: 8px; /* ★追加: フォーム要素間のマージン */
-    margin-bottom: 3px; /* ★追加 */
-    display: block; /* ラベルを独立した行にする */
-    text-align: left; /* 左寄せ */
+    margin-top: 8px;
+    margin-bottom: 3px;
+    display: block;
+    text-align: left;
     color: #555;
 }
 @media (max-width: 480px) {
@@ -112,19 +114,19 @@ body {
 .form-group input[type="text"],
 .form-group textarea,
 .form-group select {
-    font-size: 3.5vw; /* ★調整: フォントサイズを維持 */
-    padding: 2vw; /* ★調整: paddingを少し詰める */
-    width: calc(100% - 4px); /* border考慮 */
+    font-size: 3.5vw;
+    padding: 2vw;
+    width: calc(100% - 4px);
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box; /* paddingとborderをwidthに含める */
+    box-sizing: border-box;
 }
 @media (max-width: 480px) {
     .form-group input[type="text"],
     .form-group textarea,
     .form-group select {
-        padding: 6px; /* ★調整: 固定paddingをさらに詰める */
-        font-size: 0.9em; /* ★調整: フォントサイズを維持 */
+        padding: 6px;
+        font-size: 0.9em;
     }
 }
 /* PCでのinput/textarea/select (既存) */
@@ -153,39 +155,44 @@ body {
 
 /* 4択問題用のCSS (モバイルでの調整) */
 .options-grid {
-    gap: 10px; /* ★調整: 選択肢間のギャップを固定値に */
-    margin-top: 15px; /* ★調整: マージンを固定値に */
-    flex-grow: 1; /* コンテンツが伸びるように */
+    gap: 10px;
+    margin-top: 15px;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* コンテンツを上から配置 */
+    justify-content: flex-start;
 }
 
 
 .option-button {
-    /* ★重要: max-heightとoverflow-y: autoを完全に削除 */
-    padding: 12px 15px; /* ★調整: paddingを固定値に */
-    font-size: 3.8vw; /* ★調整: フォントサイズを少し戻す */
+    padding: 12px 15px;
+    font-size: 3.8vw;
     line-height: 1.3;
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #f9f9f9;
     color: #333;
     cursor: pointer;
-    text-align: left; /* ★調整: 左寄せ */
-    width: 100%; /* 全幅に広げる */
-    box-sizing: border-box; /* paddingとborderをwidthに含める */
-    transition: background-color 0.2s, border-color 0.2s;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.1s; /* ★調整: transformも追加 */
 }
 
 .option-button:hover {
     background-color: #e0e0e0;
 }
 
+/* ★修正: 選択中の色を明確に */
 .option-button.selected {
-    background-color: #d1e7dd; /* 選択時の色 */
-    border-color: #28a745;
+    background-color: #a8dadc; /* 少し明るい青緑 */
+    border-color: #457b9d; /* 濃い青緑 */
+    font-weight: bold;
+    color: #333;
+    transform: translateY(-2px); /* 少し浮き上がる効果 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 影を追加 */
 }
+
 .option-button.correct-option {
     background-color: #d4edda;
     border-color: #28a745;
@@ -201,8 +208,8 @@ body {
 /* 小さい画面でのoption-buttonの固定サイズ */
 @media (max-width: 480px) {
     .option-button {
-        padding: 10px 12px; /* ★調整: 固定paddingを維持 */
-        font-size: 15px; /* ★調整: 固定フォントサイズを維持 */
+        padding: 10px 12px;
+        font-size: 15px;
     }
 }
 /* PCでのoption-button (既存) */
@@ -217,24 +224,24 @@ body {
 /* アクションボタン群をまとめる新しいdiv */
 .quiz-buttons {
     display: flex;
-    justify-content: space-around; /* ★調整: ボタンを横に並べる */
-    margin-top: 20px; /* ★調整: 上のマージンを少し増やす */
-    flex-wrap: wrap; /* 画面幅が狭い場合は折り返す */
-    gap: 10px; /* ボタン間のギャップ */
+    justify-content: space-around;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 /* アクションボタン（解答する、次へ、問題を追加）の統一スタイル (モバイルでの調整) */
 .action-button, .action-button-toggle {
-    padding: 10px 15px; /* ★調整: 固定padding */
-    font-size: 1em; /* ★調整: 固定フォントサイズ */
-    margin-top: 0; /* ★調整: quiz-buttonsのgapで調整するため */
-    width: 48%; /* ★調整: 横並びにするために幅を調整 */
+    padding: 10px 15px;
+    font-size: 1em;
+    margin-top: 0;
+    width: 48%; /* 横並びにするために幅を調整 */
     box-sizing: border-box;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
-    flex-shrink: 0; /* ボタンが縮まないように */
+    flex-shrink: 0;
 }
 
 .action-button {
@@ -252,8 +259,8 @@ body {
 .action-button-toggle { /* 問題追加ボタン */
     background-color: #6c757d;
     color: white;
-    margin-top: 15px; /* ★調整: クイズセクションのボタンとは独立したマージン */
-    width: auto; /* 幅を自動調整 */
+    margin-top: 15px;
+    width: auto;
     padding: 10px 20px;
 }
 .action-button-toggle:hover {
@@ -267,10 +274,10 @@ body {
     color: #007bff;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 0.9em; /* ★調整: フォントサイズを維持 */
-    padding: 5px 10px; /* ★調整: paddingを調整 */
-    margin-top: 0; /* quiz-buttonsのgapで調整 */
-    width: auto; /* 幅を自動調整 */
+    font-size: 0.9em;
+    padding: 5px 10px;
+    margin-top: 0;
+    width: auto;
     flex-shrink: 0;
 }
 .action-button-link:hover {
@@ -287,7 +294,7 @@ body {
     .action-button, .action-button-toggle {
         padding: 10px 20px;
         font-size: 1em;
-        width: auto; /* PCでは横並びで固定幅 */
+        width: auto;
     }
     .action-button-toggle {
         margin-top: 20px;
@@ -297,45 +304,45 @@ body {
         font-size: 0.9em;
     }
     .quiz-buttons {
-        justify-content: center; /* PCでは中央寄せ */
+        justify-content: center;
         gap: 15px;
     }
 }
 
 
 #result-area {
-    margin-top: 15px; /* ★調整: マージンを調整 */
-    padding-top: 10px; /* ★調整: paddingを調整 */
-    border-top: 1px solid #eee; /* ★追加: 区切り線 */
-    text-align: left; /* テキスト左寄せ */
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: left;
 }
 
 #feedback-text {
-    font-size: 1.1em; /* ★調整: 固定フォントサイズを読みやすく */
-    margin-bottom: 8px; /* ★調整: マージンを維持 */
-    font-weight: bold; /* ★追加: 太字 */
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    font-weight: bold;
 }
 
 #explanation-text {
     /* ★重要: max-heightとoverflow-y: autoを完全に削除 */
-    font-size: 0.95em; /* ★調整: フォントサイズを読みやすく */
+    font-size: 0.95em; /* ★調整: フォントサイズを維持 */
     white-space: pre-wrap;
     text-align: left;
     word-wrap: break-word;
     line-height: 1.5;
     padding-right: 0;
     -webkit-overflow-scrolling: auto;
-    color: #444; /* ★調整: 文字色を少し濃く */
+    color: #444;
 }
 
 /* 小さい画面でのfeedback-textとexplanation-textの固定サイズ */
 @media (max-width: 480px) {
     #feedback-text {
-        font-size: 1.05em; /* ★調整 */
-        margin-bottom: 6px; /* ★調整 */
+        font-size: 1.05em;
+        margin-bottom: 6px;
     }
     #explanation-text {
-        font-size: 0.9em; /* ★調整 */
+        font-size: 0.9em;
     }
 }
 /* PCでのfeedback-textとexplanation-text (既存) */
@@ -355,15 +362,19 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-bottom: 10px; /* ★調整: paddingを維持 */
-    overflow-y: auto; /* ★維持: 問題追加フォームが長い場合のみスクロール */
-    max-height: calc(100vh - 80px); /* ★調整: ビューポート高からボタン類を引いた高さ */
+    padding-bottom: 10px;
+    /* ★維持: 問題追加フォームが長い場合のみスクロール */
+    overflow-y: auto;
+    max-height: calc(100vh - 80px); /* ビューポート高からボタン類を引いた高さ */
+    /* ★追加: フォームにヘッダーを追加した場合の調整 */
+    padding-top: 10px; /* フォームの上部に少しパディング */
 }
+
 /* 小さい画面での問題追加フォームの固定サイズ */
 @media (max-width: 480px) {
     #add-question-form-section {
-        max-height: 380px; /* ★調整: スマホでの最大高さを少し戻す */
-        padding-top: 10px; /* ★調整: paddingを維持 */
+        max-height: 380px;
+        padding-top: 10px;
     }
 }
 /* PCでの問題追加フォームの最大高さを固定 (既存) */
