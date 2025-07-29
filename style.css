@@ -1,0 +1,246 @@
+/* style.css */
+
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* ★変更: min-heightを調整し、ビューポートの高さを最大限活用 */
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #fff;
+    padding: 5vw;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 95%;
+    /* ★さらに調整: PCでの最大幅を小さくする */
+    max-width: 550px; /* 例: 650pxから550pxへ */
+    margin: auto;
+    /* ★調整: PCでの最小高さを調整し、スクロールを避ける */
+    min-height: 480px; /* 例: 400pxから480pxへ */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* メディアクエリ: PCでの全体的な調整 */
+@media (min-width: 768px) {
+    .container {
+        padding: 20px; /* 例: 30pxから20pxへ */
+        min-height: 520px; /* 例: 480pxから520pxへ。コンテンツ量に応じて調整 */
+    }
+}
+
+
+h1 {
+    color: #333;
+    margin-bottom: 3vw;
+    font-size: 6vw;
+    line-height: 1.2;
+}
+
+/* 小さい画面でのh1の最小サイズ */
+@media (min-width: 400px) {
+    h1 {
+        font-size: 24px; /* 例: 28pxから24pxへ */
+    }
+}
+
+/* PCでのh1の固定サイズ */
+@media (min-width: 768px) {
+    h1 {
+        font-size: 28px; /* 例: 32pxから28pxへ */
+        margin-bottom: 15px; /* 例: 25pxから15pxへ */
+    }
+}
+
+
+#question-text {
+    font-size: 4.5vw;
+    margin-bottom: 4vw;
+    color: #555;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    /* ★さらに調整: PCでの問題文の最大高さを小さくする */
+    max-height: 120px; /* 例: 150pxから120pxへ */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* PCでの#question-textの最大サイズ */
+@media (min-width: 768px) {
+    #question-text {
+        font-size: 1.1em; /* 例: 1.2emから1.1emへ */
+        margin-bottom: 15px; /* 例: 20pxから15pxへ */
+        max-height: 100px; /* 例: 120pxから100pxへ */
+    }
+}
+
+
+/* フォーム用スタイル (PCでの調整) */
+.form-group label {
+    font-size: 3.5vw;
+}
+@media (min-width: 768px) {
+    .form-group label {
+        font-size: 0.9em; /* 例: 1emから0.9emへ */
+    }
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+    font-size: 3.5vw;
+}
+@media (min-width: 768px) {
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group select {
+        padding: 8px; /* 例: 10pxから8pxへ */
+        font-size: 0.9em; /* 例: 1emから0.9emへ */
+    }
+}
+
+.form-group textarea {
+    /* ★調整: PCでのtextareaの最小高さを小さくする */
+    min-height: 60px; /* 例: 80pxから60pxへ */
+}
+
+
+/* 4択問題用のCSS */
+.options-grid {
+    gap: 1.5vw; /* 例: 2vwから1.5vwへ */
+    margin-top: 3vw; /* 例: 4vwから3vwへ */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+.option-button {
+    padding: 2.5vw 3vw; /* 例: 3vw 3.5vwから2.5vw 3vwへ */
+    font-size: 3.5vw; /* 例: 3.8vwから3.5vwへ */
+    line-height: 1.4;
+    /* ★さらに調整: 各選択肢ボタンの最大高さを小さくする */
+    max-height: 70px; /* 例: 80pxから70pxへ */
+    overflow-y: auto;
+}
+
+/* PCでのoption-buttonの最大サイズ */
+@media (min-width: 768px) {
+    .option-button {
+        padding: 10px 12px; /* 例: 12px 15pxから10px 12pxへ */
+        font-size: 0.95em; /* 例: 1emから0.95emへ */
+        max-height: 60px; /* 例: 70pxから60pxへ */
+    }
+}
+
+.option-button:hover {
+    background-color: #d0d0d0;
+}
+
+/* ★修正: 選択された選択肢ボタンのスタイルを再確認 */
+.option-button.selected {
+    background-color: #87CEEB; /* スカイブルー系の明るい色に！ */
+    color: #333; /* ★変更: 文字色を濃い目に変更。背景が明るくなるので文字は濃い方が見やすい場合が多い */
+    font-weight: bold; /* ★追加: 太字にする */
+    border-color: #5F9EA0;
+    box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.5);
+}
+
+/* アクションボタン（解答する、次へ、スキップ、問題を追加）の統一スタイル */
+.action-button, .action-button-toggle {
+    padding: 2.5vw 5vw; /* 例: 3vw 6vwから2.5vw 5vwへ */
+    font-size: 3.8vw; /* 例: 4vwから3.8vwへ */
+    margin-top: 3vw; /* 例: 4vwから3vwへ */
+}
+
+/* PCでのアクションボタンの最大サイズ */
+@media (min-width: 768px) {
+    .action-button, .action-button-toggle {
+        padding: 10px 20px; /* 例: 12px 25pxから10px 20pxへ */
+        font-size: 1em; /* 例: 1.1emから1emへ */
+        margin-top: 15px; /* 例: 20pxから15pxへ */
+    }
+}
+
+/* スキップボタンのスタイル（リンク風） */
+.action-button-link {
+    padding: 1vw 2vw; /* 例: 1.5vw 3vwから1vw 2vwへ */
+    font-size: 2.8vw; /* 例: 3vwから2.8vwへ */
+    margin-top: 1.5vw; /* 例: 2vwから1.5vwへ */
+}
+
+/* PCでのスキップボタンの最大サイズ */
+@media (min-width: 768px) {
+    .action-button-link {
+        padding: 4px 8px; /* 例: 5px 10pxから4px 8pxへ */
+        font-size: 0.8em; /* 例: 0.9emから0.8emへ */
+        margin-top: 8px; /* 例: 10pxから8pxへ */
+    }
+}
+
+
+#result-area {
+    margin-top: 3vw; /* 例: 4vwから3vwへ */
+    padding-top: 2vw; /* 例: 3vwから2vwへ */
+}
+
+#feedback-text {
+    font-size: 3.8vw; /* 例: 4vwから3.8vwへ */
+    margin-bottom: 1.5vw; /* 例: 2vwから1.5vwへ */
+}
+
+/* PCでのfeedback-textの最大サイズ */
+@media (min-width: 768px) {
+    #feedback-text {
+        font-size: 1em; /* 例: 1.1emから1emへ */
+        margin-bottom: 8px; /* 例: 10pxから8pxへ */
+    }
+}
+
+#explanation-text {
+    font-size: 3.2vw; /* 例: 3.5vwから3.2vwへ */
+    line-height: 1.5;
+    /* ★さらに調整: PCでの解説文の最大高さを小さくする */
+    max-height: 120px; /* 例: 120pxから100pxへ */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* PCでのexplanation-textの最大サイズ */
+@media (min-width: 768px) {
+    #explanation-text {
+        font-size: 0.9em; /* 例: 0.95emから0.9emへ */
+        max-height: 90px; /* 例: 100pxから90pxへ */
+    }
+}
+
+/* 問題追加フォームセクションの調整 */
+#add-question-form-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* フォームコンテンツを上寄せにする */
+    padding-bottom: 10px; /* 下部余白を減らす */
+    overflow-y: auto;
+    /* ★さらに調整: PCでの問題追加フォームの最大高さを固定 */
+    max-height: calc(100vh - 80px); /* 画面高 - 上下の余白とボタン類 */
+}
+/* PCでの問題追加フォームの最大高さを固定 */
+@media (min-width: 768px) {
+    #add-question-form-section {
+        max-height: 400px; /* 例: 550pxから400pxへ。コンテンツ量に応じて調整 */
+        padding-top: 15px; /* 例: 20pxから15pxへ */
+    }
+}
