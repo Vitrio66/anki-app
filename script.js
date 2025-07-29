@@ -5,7 +5,7 @@ const LOCAL_STORAGE_ALL_QUESTIONS_KEY = 'allQuestions';
 const LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY = 'mistakenQuestions';
 const GITHUB_QUESTIONS_JSON_PATH = 'questions.json'; // GitHub Pages上のJSONファイルのパス
 const ADMIN_PASSWORD = "Testcrafter"; // 管理者パスワード
-const USER_PASSWORD = "Icandoit"; // ユーザーパスワード
+const USER_PASSWORD = "Icandoit"; // ユーザーパスワード (今回はプロンプト認証ではなく、機能の区別のためのみ存在)
 
 // --- グローバル変数 ---
 let allQuestions = []; // 全ての問題を保持するリスト
@@ -24,7 +24,7 @@ const quizSizeModal = document.getElementById('quiz-size-modal');
 const initialQuizSizeInput = document.getElementById('initial-quiz-size-input');
 const startQuizButton = document.getElementById('start-quiz-button');
 
-const adminPasswordModal = document.getElementById('admin-password-modal');
+const adminPasswordModal = document.getElementById('admin-password-modal'); // このモーダルは今回使用しませんが、IDは残しておきます
 const adminPasswordInput = document.getElementById('admin-password-input');
 const adminPasswordSubmit = document.getElementById('admin-password-submit');
 const adminPasswordCancel = document.getElementById('admin-password-cancel');
@@ -54,7 +54,7 @@ const hideAddQuestionFormButton = document.getElementById('hide-add-question-for
 
 // 新しく追加される管理者モード・ユーザーモードのボタン
 const showAddQuestionFormButtonUser = document.getElementById('show-add-question-form-button-user');
-const enterAdminModeButton = document.getElementById('enter-admin-mode-button');
+const enterAdminModeButton = document.getElementById('enter-admin-mode-button'); // ★復活
 const showAddQuestionFormButtonAdmin = document.getElementById('show-add-question-form-button-admin');
 const exitAdminModeButton = document.getElementById('exit-admin-mode-button');
 
@@ -116,7 +116,7 @@ function getNextQuestionId() {
 // 全てのUIセクションを非表示にする
 function hideAllSections() {
     quizSizeModal.style.display = 'none';
-    adminPasswordModal.style.display = 'none';
+    adminPasswordModal.style.display = 'none'; // プロンプト認証に切り替えるため、基本的には使わない
     roundIndicator.style.display = 'none';
     quizSection.style.display = 'none';
     adminSection.style.display = 'none';
@@ -321,7 +321,8 @@ function displayQuestion() {
         const button = document.createElement('button');
         button.textContent = `${index + 1}. ${option}`;
         button.dataset.option = option;
-        button.dataset.originalIndex = currentQuestion.options.indexOf(option) + 1; // 元の選択肢の番号を保存 ★追加
+        // 元の選択肢の番号を保存（displayQuestionの時点で正解番号を振るために必要）
+        button.dataset.originalIndex = currentQuestion.options.indexOf(option) + 1; 
         button.classList.add('option-button');
 
         button.addEventListener('click', () => {
@@ -347,7 +348,8 @@ function checkAnswer() {
 
     const userAnswer = selectedOptionText;
     const correctAnswer = currentQuestion.correctAnswer;
-    const correctOptionNumber = currentQuestion.options.indexOf(correctAnswer) + 1; // 正解の選択肢の元の番号 ★追加
+    // 正解の選択肢の元の番号を取得
+    const correctOptionNumber = currentQuestion.options.indexOf(correctAnswer) + 1; 
 
     disableOptions(); // 選択肢を無効化
 
@@ -362,10 +364,10 @@ function checkAnswer() {
     });
 
     if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-        feedbackText.textContent = `正解！ (選択肢${correctOptionNumber})`; // ★修正
+        feedbackText.textContent = `正解！ (選択肢${correctOptionNumber})`; 
         feedbackText.className = 'correct'; // 緑色に
     } else {
-        feedbackText.textContent = `不正解... (正解は選択肢${correctOptionNumber})`; // ★修正
+        feedbackText.textContent = `不正解... (正解は選択肢${correctOptionNumber})`; 
         feedbackText.className = 'incorrect'; // 赤色に
         addMistakenQuestion(currentQuestion); // 間違えた問題を追加
     }
@@ -391,7 +393,7 @@ skipButton.addEventListener('click', () => {
     // 解答済みの状態にする（選択肢を無効化し、正解を表示）
     disableOptions();
     const correctAnswer = currentQuestion.correctAnswer;
-    const correctOptionNumber = currentQuestion.options.indexOf(correctAnswer) + 1; // 正解の選択肢の元の番号 ★追加
+    const correctOptionNumber = currentQuestion.options.indexOf(correctAnswer) + 1; // 正解の選択肢の元の番号を取得
     const optionButtons = document.querySelectorAll('.option-button');
     optionButtons.forEach(button => {
         if (button.dataset.option === correctAnswer) {
@@ -399,7 +401,7 @@ skipButton.addEventListener('click', () => {
         }
     });
 
-    feedbackText.textContent = `スキップしました。 (正解は選択肢${correctOptionNumber})`; // ★修正
+    feedbackText.textContent = `スキップしました。 (正解は選択肢${correctOptionNumber})`; 
     feedbackText.className = 'incorrect'; // スキップは不正解扱い
     explanationText.textContent = `正解は「${correctAnswer}」です。\n${currentQuestion.explanation}`;
     resultArea.style.display = 'block';
@@ -440,31 +442,17 @@ nextButton.addEventListener('click', () => {
 
 // --- 管理者モード関連の機能 ---
 
-// 管理者パスワードモーダルを表示（今回はURLパラメータで認証するため、このボタンは使わない）
-// enterAdminModeButton.addEventListener('click', () => {
-//     hideAllSections(); // 全てのセクションを隠す
-//     adminPasswordModal.style.display = 'flex';
-//     adminPasswordInput.value = ''; // パスワード入力欄をクリア
-//     adminPasswordInput.focus();
-// });
-
-// 管理者パスワード認証（URLパラメータ認証に切り替えるため、コメントアウトまたは削除）
-// adminPasswordSubmit.addEventListener('click', () => {
-//     if (adminPasswordInput.value === ADMIN_PASSWORD) {
-//         isAdminMode = true;
-//         hideAllSections(); // 全てのセクションを隠す
-//         showAdminSection(); // 管理者セクションを表示
-//     } else {
-//         alert("パスワードが異なります。");
-//         adminPasswordInput.value = '';
-//     }
-// });
-
-// 管理者パスワードモーダルキャンセル（URLパラメータ認証に切り替えるため、コメントアウトまたは削除）
-// adminPasswordCancel.addEventListener('click', () => {
-//     hideAllSections(); // 全てのセクションを隠す
-//     initializeApp(); // アプリを初期状態に戻す
-// });
+// 管理者モードボタンのイベントリスナー (プロンプト認証)
+enterAdminModeButton.addEventListener('click', () => {
+    const password = prompt("管理者パスワードを入力してください:");
+    if (password === ADMIN_PASSWORD) {
+        isAdminMode = true;
+        hideAllSections(); // 全てのセクションを隠す
+        showAdminSection(); // 管理者セクションを表示
+    } else if (password !== null) { // キャンセル時は何もしない
+        alert("パスワードが異なります。");
+    }
+});
 
 // 管理者セクションを表示
 function showAdminSection() {
@@ -524,7 +512,7 @@ showAddQuestionFormButtonAdmin.addEventListener('click', () => {
 exitAdminModeButton.addEventListener('click', () => {
     isAdminMode = false; // 管理者モードを解除
     hideAllSections(); // 全てのセクションを隠す
-    initializeApp(); // アプリを初期状態に戻す (URLパラメータもクリアされる想定)
+    initializeApp(); // アプリを初期状態に戻す
 });
 
 
@@ -624,60 +612,18 @@ showAddQuestionFormButtonUser.addEventListener('click', () => {
 
 // --- アプリ初期化 ---
 
-/**
- * URLパラメータをチェックし、モードとパスワードに基づいて認証を行う
- */
-async function checkUrlParamsForAuth() {
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode');
-    const password = params.get('password');
-
-    if (mode === 'admin' && password === ADMIN_PASSWORD) {
-        isAdminMode = true;
-        hideAllSections();
-        alert("管理者モードでログインしました。");
-        showAdminSection();
-        return true; // 認証成功
-    } else if (mode === 'user' && password === USER_PASSWORD) {
-        isAdminMode = false;
-        hideAllSections();
-        alert("ユーザーモードでログインしました。");
-        const hasQuestions = await loadAllQuestions(); // ユーザーモードでも問題をロード
-        if (hasQuestions) {
-            showQuizSizeModal(); // 問題があればクイズ開始モーダル
-        } else {
-            alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
-            appFooterButtons.style.display = 'flex'; // フッターボタンは表示
-        }
-        return true; // 認証成功
-    } else if (mode || password) { // modeまたはpasswordがあるが、認証に失敗した場合
-        alert("無効なモードまたはパスワードです。");
-        // URLからパスワードパラメータを削除してリロード (簡易的なセキュリティ対策)
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        return false; // 認証失敗
-    }
-    return false; // URLパラメータがない場合
-}
-
 async function initializeApp() {
     hideAllSections(); // まず全てのセクションを隠す
+    isAdminMode = false; // 初期化時は必ずユーザーモード（管理者モードはボタンからのみ遷移）
     
-    // URLパラメータでの認証を試みる
-    const isAuthenticated = await checkUrlParamsForAuth();
-
-    if (!isAuthenticated) {
-        // URLパラメータによる認証がなかった、または失敗した場合
-        isAdminMode = false; // 強制的にユーザーモード
-        const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
-        
-        if (hasQuestions) {
-            showQuizSizeModal(); // 問題があれば問題数設定モーダルを表示
-        } else {
-            // 問題が読み込めなかった場合でも、フッターボタンは表示する
-            alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
-            appFooterButtons.style.display = 'flex'; 
-        }
+    const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
+    
+    if (hasQuestions) {
+        showQuizSizeModal(); // 問題があれば問題数設定モーダルを表示
+    } else {
+        // 問題が読み込めなかった場合でも、フッターボタンは表示する
+        alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
+        appFooterButtons.style.display = 'flex'; 
     }
     window.scrollTo(0, 0);
 }
