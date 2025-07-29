@@ -4,6 +4,7 @@
 const LOCAL_STORAGE_ALL_QUESTIONS_KEY = 'allQuestions';
 const LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY = 'mistakenQuestions';
 const GITHUB_QUESTIONS_JSON_PATH = 'questions.json'; // GitHub Pages上のJSONファイルのパス
+const ADMIN_PASSWORD = "admin"; // 仮の管理者パスワード。本番環境ではより安全な方法を検討
 
 // --- グローバル変数 ---
 let allQuestions = []; // 全ての問題を保持するリスト
@@ -15,11 +16,17 @@ let currentQuestion;
 let selectedOptionText = null;
 let round = 0; // 現在の周回数 (0: 未開始, 1: 1周目, 2: 2周目など)
 let initialQuizSize = 0; // ユーザーが設定する初回出題数
+let isAdminMode = false; // 管理者モードの状態を追跡するフラグ
 
 // --- UI要素の取得 ---
-const quizSizeModal = document.getElementById('quiz-size-modal'); // ★追加: モーダル
-const initialQuizSizeInput = document.getElementById('initial-quiz-size-input'); // ★追加: モーダル内の入力フィールド
-const startQuizButton = document.getElementById('start-quiz-button'); // ★追加: モーダル内の開始ボタン
+const quizSizeModal = document.getElementById('quiz-size-modal');
+const initialQuizSizeInput = document.getElementById('initial-quiz-size-input');
+const startQuizButton = document.getElementById('start-quiz-button');
+
+const adminPasswordModal = document.getElementById('admin-password-modal'); // ★追加
+const adminPasswordInput = document.getElementById('admin-password-input'); // ★追加
+const adminPasswordSubmit = document.getElementById('admin-password-submit'); // ★追加
+const adminPasswordCancel = document.getElementById('admin-password-cancel'); // ★追加
 
 const roundIndicator = document.getElementById('round-indicator');
 const quizSection = document.getElementById('quiz-section');
@@ -33,8 +40,7 @@ const nextButton = document.getElementById('next-button');
 const skipButton = document.getElementById('skip-button');
 const quizButtonsContainer = document.querySelector('.quiz-buttons');
 
-// 問題追加フォーム関連のUI要素
-const showAddQuestionFormButton = document.getElementById('show-add-question-form-button');
+// 問題追加フォーム関連のUI要素 (既存のIDを使用)
 const addQuestionFormSection = document.getElementById('add-question-form-section');
 const newQuestionText = document.getElementById('new-question-text');
 const newCorrectAnswer = document.getElementById('new-correct-answer');
@@ -43,6 +49,19 @@ const newCategory = document.getElementById('new-category');
 const newOptionInputs = document.querySelectorAll('.new-option-input');
 const addQuestionButton = document.getElementById('add-question-button');
 const hideAddQuestionFormButton = document.getElementById('hide-add-question-form-button');
+
+// 新しく追加される管理者モード・ユーザーモードのボタン
+const showAddQuestionFormButtonUser = document.getElementById('show-add-question-form-button-user'); // ★問題追加依頼ボタン
+const enterAdminModeButton = document.getElementById('enter-admin-mode-button'); // ★管理者モードに入るボタン
+const showAddQuestionFormButtonAdmin = document.getElementById('show-add-question-form-button-admin'); // ★管理者モードの問題追加ボタン
+const exitAdminModeButton = document.getElementById('exit-admin-mode-button'); // ★管理者モード終了ボタン
+
+// 問題管理セクションの要素
+const adminSection = document.getElementById('admin-section'); // ★追加
+const questionList = document.getElementById('question-list'); // ★追加
+
+// アプリのフッターボタン群
+const appFooterButtons = document.querySelector('.app-footer-buttons'); // ★追加
 
 // --- ヘルパー関数 ---
 
@@ -135,17 +154,18 @@ async function loadAllQuestions() {
 
     if (allQuestions.length === 0) {
         // 問題がない場合のUI表示調整
-        questionText.textContent = "現在、問題がありません。GitHub Pagesのquestions.jsonファイルを確認するか、新しい問題を追加してください。";
-        optionsContainer.innerHTML = '';
-        submitAnswerButton.style.display = 'none';
-        nextButton.style.display = 'none';
-        skipButton.style.display = 'none';
-        resultArea.style.display = 'none';
-        quizButtonsContainer.style.display = 'none';
-        roundIndicator.style.display = 'none';
-        
-        quizSection.style.display = 'flex'; // 問題なしメッセージを表示するために表示
-        showAddQuestionFormButton.style.display = 'inline-block';
+        // クイズセクションが非表示の場合のみメッセージを表示
+        if (quizSection.style.display !== 'flex') { // クイズが開始されていない場合
+            questionText.textContent = "現在、問題がありません。新しい問題を追加するか、GitHub Pagesのquestions.jsonファイルを確認してください。";
+            optionsContainer.innerHTML = '';
+            submitAnswerButton.style.display = 'none';
+            nextButton.style.display = 'none';
+            skipButton.style.display = 'none';
+            resultArea.style.display = 'none';
+            quizButtonsContainer.style.display = 'none';
+            roundIndicator.style.display = 'none';
+            quizSection.style.display = 'flex'; // 問題なしメッセージを表示するために表示
+        }
         return false; // 問題がないことを示す
     }
     return true; // 問題があることを示す
@@ -190,7 +210,7 @@ function startQuiz(quizSize) {
 
     quizSizeModal.style.display = 'none'; // モーダルを隠す
     quizSection.style.display = 'flex'; // クイズセクションを表示
-    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンを隠す
+    appFooterButtons.style.display = 'none'; // フッターボタンを隠す (クイズ中は不要)
     
     displayQuestion();
 }
@@ -256,13 +276,11 @@ function endQuiz(message) {
     resultArea.style.display = 'none';
     quizButtonsContainer.style.display = 'none';
     roundIndicator.style.display = 'none';
-    showAddQuestionFormButton.style.display = 'inline-block';
+    appFooterButtons.style.display = 'flex'; // フッターボタンを表示 (クイズ終了時)
     
     alert(message);
     window.scrollTo(0, 0);
-    // クイズ終了後、再度問題数設定モーダルを表示するかどうかは要件による
-    // 今回は問題追加ボタンを表示し、完全に終了としています。
-    // もし再挑戦させたい場合は showQuizSizeModal(); を呼ぶ
+    initializeApp(); // アプリを初期状態に戻す
 }
 
 
@@ -290,7 +308,7 @@ function displayQuestion() {
     optionsContainer.style.pointerEvents = 'auto';
     clearOptionSelection();
     quizButtonsContainer.style.display = 'flex';
-    showAddQuestionFormButton.style.display = 'none'; // クイズ中は問題追加ボタンを隠す
+    appFooterButtons.style.display = 'none'; // クイズ中はフッターボタンを隠す
 
     // ★修正点1: 「解答する」ボタンを初期状態で無効にする
     submitAnswerButton.disabled = true; 
@@ -359,7 +377,6 @@ function checkAnswer() {
 }
 
 // 「解答する」ボタンのイベントリスナー
-// ★確認・修正点3: このイベントリスナーが適切に設定されているかを確認
 submitAnswerButton.addEventListener('click', checkAnswer); 
 
 
@@ -417,46 +434,130 @@ nextButton.addEventListener('click', () => {
     }
 });
 
-// 「問題を追加」ボタン（表示）
-showAddQuestionFormButton.addEventListener('click', () => {
-    addQuestionFormSection.style.display = 'flex';
-    quizSection.style.display = 'none';
-    showAddQuestionFormButton.style.display = 'none';
-    roundIndicator.style.display = 'none'; // フォーム表示中は周回表示を非表示
+// --- 管理者モード関連の機能 ---
 
+// 管理者パスワードモーダルを表示
+enterAdminModeButton.addEventListener('click', () => {
+    quizSizeModal.style.display = 'none'; // クイズサイズモーダルを隠す
+    adminPasswordModal.style.display = 'flex';
+    adminPasswordInput.value = ''; // パスワード入力欄をクリア
+    adminPasswordInput.focus();
+    appFooterButtons.style.display = 'none'; // フッターボタンを隠す
+});
+
+// 管理者パスワード認証
+adminPasswordSubmit.addEventListener('click', () => {
+    if (adminPasswordInput.value === ADMIN_PASSWORD) {
+        isAdminMode = true;
+        adminPasswordModal.style.display = 'none';
+        showAdminSection(); // 管理者セクションを表示
+        renderQuestionList(); // 問題リストをレンダリング
+    } else {
+        alert("パスワードが異なります。");
+        adminPasswordInput.value = '';
+    }
+});
+
+// 管理者パスワードモーダルキャンセル
+adminPasswordCancel.addEventListener('click', () => {
+    adminPasswordModal.style.display = 'none';
+    initializeApp(); // アプリを初期状態に戻す
+});
+
+// 管理者セクションを表示
+function showAdminSection() {
+    quizSection.style.display = 'none';
+    addQuestionFormSection.style.display = 'none';
+    quizSizeModal.style.display = 'none';
+    roundIndicator.style.display = 'none';
+    appFooterButtons.style.display = 'none'; // 管理者モード中はフッターボタンを隠す
+
+    adminSection.style.display = 'flex';
+    renderQuestionList(); // 問題リストを最新に更新
+    window.scrollTo(0, 0);
+}
+
+// 問題リストをレンダリング
+function renderQuestionList() {
+    questionList.innerHTML = '';
+    if (allQuestions.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = "登録されている問題はありません。";
+        questionList.appendChild(li);
+        return;
+    }
+    allQuestions.forEach(q => {
+        const li = document.createElement('li');
+        li.classList.add('question-item');
+        li.innerHTML = `
+            <span class="question-item-text">ID: ${q.id} - ${q.category}: ${q.question}</span>
+            <button class="delete-button" data-id="${q.id}">削除</button>
+        `;
+        questionList.appendChild(li);
+    });
+
+    // 削除ボタンにイベントリスナーを追加
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const questionIdToDelete = parseInt(event.target.dataset.id);
+            if (confirm(`ID: ${questionIdToDelete} の問題を本当に削除しますか？`)) {
+                deleteQuestion(questionIdToDelete);
+            }
+        });
+    });
+}
+
+// 問題を削除する
+function deleteQuestion(idToDelete) {
+    allQuestions = allQuestions.filter(q => q.id !== idToDelete);
+    saveAllQuestionsToLocalStorage(); // ローカルストレージを更新
+    // 間違えた問題リストからも削除（整合性を保つため）
+    mistakenQuestions = mistakenQuestions.filter(q => q.id !== idToDelete);
+    saveMistakenQuestions(); // ローカルストレージを更新
+    renderQuestionList(); // リストを再レンダリング
+    alert(`問題ID: ${idToDelete} を削除しました。`);
+}
+
+// 管理者モード中の「新しい問題を追加」ボタン
+showAddQuestionFormButtonAdmin.addEventListener('click', () => {
+    adminSection.style.display = 'none';
+    addQuestionFormSection.style.display = 'flex';
     // フォームの入力欄をクリア
     newQuestionText.value = '';
     newCorrectAnswer.value = '';
     newExplanation.value = '';
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
-
     window.scrollTo(0, 0);
 });
 
-// 「キャンセル」ボタン（問題追加フォームを隠す）
+// 管理者モード終了ボタン
+exitAdminModeButton.addEventListener('click', () => {
+    isAdminMode = false;
+    adminSection.style.display = 'none';
+    initializeApp(); // アプリを初期状態に戻す
+});
+
+
+// 問題追加フォームから「キャンセル」ボタン (管理者モード中のフォーム用)
 hideAddQuestionFormButton.addEventListener('click', () => {
     addQuestionFormSection.style.display = 'none';
-    // 問題追加フォームを閉じた後、クイズを再開するか、問題数設定モーダルを表示するかを判断
-    if (round > 0 && currentQuizSet.length > 0) { // クイズが進行中で問題が残っている場合
-        quizSection.style.display = 'flex';
-        showAddQuestionFormButton.style.display = 'inline-block'; // クイズ継続中は問題追加ボタンを再び表示
-        displayQuestion(); // 現在の問題を表示し直す
-    } else { // クイズがまだ始まっていないか、完全に終了している場合
-        initializeApp(); // アプリを再初期化して問題数モーダルから開始
+    if (isAdminMode) {
+        showAdminSection(); // 管理者モードなら問題管理画面に戻る
+    } else {
+        initializeApp(); // 通常ユーザーなら初期画面に戻る
     }
-    window.scrollTo(0, 0);
 });
 
-// 「問題を追加する」ボタン（問題追加フォームから）
-addQuestionButton.addEventListener('click', async () => { // asyncを追加
+
+// 問題追加フォームから「問題を追加する」ボタン
+addQuestionButton.addEventListener('click', async () => {
     const question = newQuestionText.value.trim();
     const correctAnswer = newCorrectAnswer.value.trim();
     const explanation = newExplanation.value.trim();
     const category = newCategory.value;
     const options = Array.from(newOptionInputs).map(input => input.value.trim());
 
-    // 入力チェック
     if (!question || !correctAnswer || !explanation || options.some(opt => !opt)) {
         alert("全ての問題項目と4つの選択肢を埋めてください。");
         return;
@@ -475,10 +576,10 @@ addQuestionButton.addEventListener('click', async () => { // asyncを追加
         options: options
     };
 
-    allQuestions.push(newQuestion); // 全ての問題リストに追加
-    saveAllQuestionsToLocalStorage(); // ローカルストレージに保存
+    allQuestions.push(newQuestion);
+    saveAllQuestionsToLocalStorage();
 
-    alert("問題が追加されました！この問題は、あなたのブラウザにのみ保存されます。GitHub Pages上のquestions.jsonは更新されません。");
+    alert("問題が追加されました！");
 
     // フォームをクリア
     newQuestionText.value = '';
@@ -487,27 +588,41 @@ addQuestionButton.addEventListener('click', async () => { // asyncを追加
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
 
-    // 問題を追加したら、問題数設定モーダルに戻る
-    addQuestionFormSection.style.display = 'none';
-    await initializeApp(); // 問題を追加したので、アプリを再初期化して問題数モーダルを表示
+    if (isAdminMode) {
+        showAdminSection(); // 管理者モードなら問題管理画面に戻る
+    } else {
+        // 通常ユーザーの問題追加依頼の場合は、依頼送信後の処理 (今回はアラートのみ)
+        initializeApp(); // 初期画面に戻る
+    }
     window.scrollTo(0, 0);
 });
+
+// --- ユーザーによる問題追加依頼機能 (簡易版) ---
+showAddQuestionFormButtonUser.addEventListener('click', () => {
+    alert("この機能は現在開発中です。管理者への問題追加依頼は、管理者に直接お問い合わせください。\n\n**【今後の実装予定】**\n問題追加依頼フォームを表示し、入力内容を管理者にメールなどで送信する機能を実装します。");
+    // ここに問題追加依頼フォーム（管理者用とは異なる）を表示するロジックを実装予定
+    // 現状はアラートのみ
+});
+
 
 // --- アプリ初期化 ---
 async function initializeApp() {
     quizSection.style.display = 'none'; // クイズセクションを非表示
     addQuestionFormSection.style.display = 'none'; // 問題追加フォームを非表示
-    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンも最初は非表示
+    adminSection.style.display = 'none'; // 管理者セクションを非表示
+    quizSizeModal.style.display = 'none'; // クイズサイズモーダルを非表示
+    adminPasswordModal.style.display = 'none'; // パスワードモーダルを非表示
+
+    appFooterButtons.style.display = 'flex'; // フッターボタンを表示 (初期画面)
+    roundIndicator.style.display = 'none'; // 初期状態では周回表示を非表示
 
     const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
     if (hasQuestions) {
         showQuizSizeModal(); // 問題があれば問題数設定モーダルを表示
     } else {
-        // 問題が読み込めなかった場合、問題追加ボタンだけ表示してユーザーに入力を促す
-        showAddQuestionFormButton.style.display = 'inline-block';
-        quizSizeModal.style.display = 'none';
+        // 問題が読み込めなかった場合、ユーザーは問題追加依頼か、管理者に問い合わせる
+        alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
     }
-    roundIndicator.style.display = 'none'; // 初期状態では周回表示を非表示
     window.scrollTo(0, 0);
 }
 
@@ -518,8 +633,8 @@ function showQuizSizeModal() {
     initialQuizSizeInput.max = allQuestions.length;
     // デフォルト値を全問題数か10の少ない方に設定
     initialQuizSizeInput.value = Math.min(10, allQuestions.length);
-    // 問題追加ボタンを再度表示 (モーダルの上に出るように)
-    showAddQuestionFormButton.style.display = 'inline-block';
+    // モーダルの上にはフッターボタンは表示しない
+    appFooterButtons.style.display = 'none'; 
 }
 
 // モーダルからクイズ開始ボタンのイベントリスナー

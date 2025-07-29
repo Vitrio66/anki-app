@@ -16,6 +16,15 @@
         </div>
     </div>
 
+    <div id="admin-password-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>管理者パスワードを入力</h2>
+            <input type="password" id="admin-password-input" placeholder="パスワード">
+            <button id="admin-password-submit" class="action-button">認証</button>
+            <button id="admin-password-cancel" class="action-button-link">キャンセル</button>
+        </div>
+    </div>
+
     <div id="round-indicator"></div>
 
     <div id="quiz-section" class="main-content" style="display: none;">
@@ -33,6 +42,18 @@
             <button id="skip-button" class="action-button-link">回答をスキップする</button>
             <button id="submit-answer-button" class="action-button">解答する</button>
             <button id="next-button" class="action-button">次の問題へ</button>
+        </div>
+    </div>
+
+    <div id="admin-section" class="main-content" style="display: none;">
+        <h2>問題管理</h2>
+        <button id="show-add-question-form-button-admin" class="action-button">新しい問題を追加</button>
+        <button id="exit-admin-mode-button" class="action-button-link">管理者モードを終了</button>
+
+        <div id="question-list-container">
+            <h3>既存の問題一覧</h3>
+            <ul id="question-list">
+                </ul>
         </div>
     </div>
 
@@ -80,7 +101,10 @@
         <button id="hide-add-question-form-button" class="action-button-link">キャンセル</button>
     </div>
     
-    <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
+    <div class="app-footer-buttons">
+        <button id="show-add-question-form-button-user" class="action-button-toggle">問題追加を依頼</button>
+        <button id="enter-admin-mode-button" class="action-button-toggle">管理者モード</button>
+    </div>
 
     <script src="script.js"></script>
 </body>

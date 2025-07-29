@@ -16,7 +16,7 @@ body {
     width: 100%;
 }
 
-/* 問題数設定モーダルのスタイル */
+/* 問題数設定モーダル & 管理者パスワードモーダルのスタイル */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -56,7 +56,8 @@ body {
     margin-bottom: 15px;
 }
 
-#initial-quiz-size-input {
+#initial-quiz-size-input,
+#admin-password-input { /* 追加 */
     width: 80%;
     padding: 12px;
     font-size: 1.2em;
@@ -67,7 +68,8 @@ body {
     display: block; /* 独立したブロック要素に */
 }
 
-#start-quiz-button {
+#start-quiz-button,
+#admin-password-submit { /* 追加 */
     padding: 12px 25px;
     font-size: 1.1em;
     background-color: #007bff;
@@ -80,9 +82,11 @@ body {
     margin: 0 auto; /* ボタンも中央寄せ */
 }
 
-#start-quiz-button:hover {
+#start-quiz-button:hover,
+#admin-password-submit:hover { /* 追加 */
     background-color: #0056b3;
 }
+/* キャンセルボタンは action-button-link を流用 */
 
 /* 周回表示のスタイル */
 #round-indicator {
@@ -106,11 +110,13 @@ body {
     .modal-content p {
         font-size: 1em;
     }
-    #initial-quiz-size-input {
+    #initial-quiz-size-input,
+    #admin-password-input { /* 追加 */
         font-size: 1em;
         padding: 10px;
     }
-    #start-quiz-button {
+    #start-quiz-button,
+    #admin-password-submit { /* 追加 */
         font-size: 1em;
         padding: 10px 20px;
     }
@@ -513,4 +519,111 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #777;
+}
+
+/* 管理者モード用スタイル */
+#admin-section {
+    padding-top: 20px;
+    margin-bottom: 20px; /* 下のボタンとの間隔 */
+}
+
+#admin-section h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#admin-section .action-button,
+#admin-section .action-button-link {
+    margin: 10px auto; /* 中央寄せ */
+    display: block; /* ブロック要素にして中央寄せ可能に */
+    width: fit-content; /* 内容に合わせた幅 */
+    max-width: 90%;
+}
+
+#question-list-container {
+    margin-top: 30px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#question-list-container h3 {
+    font-size: 1.4em;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#question-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px; /* 高さを制限してスクロール可能に */
+    overflow-y: auto;
+}
+
+.question-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed #eee;
+    font-size: 0.95em;
+    color: #555;
+}
+
+.question-item:last-child {
+    border-bottom: none;
+}
+
+.question-item-text {
+    flex-grow: 1;
+    margin-right: 15px;
+    word-break: break-all; /* 長い単語でも折り返す */
+}
+
+.question-item .delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+    flex-shrink: 0; /* 縮まないように */
+}
+
+.question-item .delete-button:hover {
+    background-color: #c82333;
+}
+
+/* フッターボタン群のスタイル */
+.app-footer-buttons {
+    margin-top: 20px;
+    margin-bottom: 20px; /* bodyの最下部近くに配置するため */
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: center; /* ボタンを中央に配置 */
+    gap: 15px; /* ボタン間のスペース */
+    flex-wrap: wrap; /* 小さい画面で折り返す */
+}
+.app-footer-buttons .action-button-toggle {
+    margin-top: 0; /* 上部の余白をリセット */
+    width: auto; /* 幅を自動調整 */
+    flex-basis: 45%; /* 2つのボタンが並ぶように */
+    max-width: 250px;
+}
+@media (max-width: 480px) {
+    .app-footer-buttons .action-button-toggle {
+        flex-basis: 90%; /* 小さい画面では1列に */
+        max-width: none;
+    }
 }
