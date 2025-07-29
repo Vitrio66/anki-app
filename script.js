@@ -42,6 +42,7 @@ const quizButtonsContainer = document.querySelector('.quiz-buttons');
 
 // 問題追加フォーム関連のUI要素 (既存のIDを使用)
 const addQuestionFormSection = document.getElementById('add-question-form-section');
+const addQuestionFormTitle = document.getElementById('add-question-form-title'); // ★追加
 const newQuestionText = document.getElementById('new-question-text');
 const newCorrectAnswer = document.getElementById('new-correct-answer');
 const newExplanation = document.getElementById('new-explanation');
@@ -512,18 +513,41 @@ function deleteQuestion(idToDelete) {
 
 // 管理者モード中の「新しい問題を追加」ボタン
 showAddQuestionFormButtonAdmin.addEventListener('click', () => {
+    showAddQuestionForm(true); // 管理者モードとしてフォームを表示
+});
+
+// 管理者モード終了ボタン
+exitAdminModeButton.addEventListener('click', () => {
+    isAdminMode = false;
+    hideAllSections(); // 全てのセクションを隠す
+    initializeApp(); // アプリを初期状態に戻す
+});
+
+
+// 問題追加フォームの表示・初期化 (管理者用/ユーザー依頼用で兼用)
+function showAddQuestionForm(forAdmin) {
     hideAllSections(); // 全てのセクションを隠す
     addQuestionFormSection.style.display = 'flex';
+    
     // フォームの入力欄をクリア
     newQuestionText.value = '';
     newCorrectAnswer.value = '';
     newExplanation.value = '';
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
-    window.scrollTo(0, 0);
-});
 
-// 問題追加フォームから「キャンセル」ボタン (管理者モード中のフォーム用)
+    if (forAdmin) {
+        addQuestionFormTitle.textContent = "新しい問題を追加 (管理者用)";
+        addQuestionButton.textContent = "問題を追加する";
+    } else {
+        addQuestionFormTitle.textContent = "問題追加を依頼 (ユーザー用)";
+        addQuestionButton.textContent = "問題追加を依頼する";
+    }
+    window.scrollTo(0, 0);
+}
+
+
+// 問題追加フォームから「キャンセル」ボタン
 hideAddQuestionFormButton.addEventListener('click', () => {
     hideAllSections(); // 全てのセクションを隠す
     if (isAdminMode) {
@@ -551,8 +575,8 @@ addQuestionButton.addEventListener('click', async () => {
         return;
     }
 
-    const newQuestion = {
-        id: getNextQuestionId(),
+    const newQuestionData = {
+        id: getNextQuestionId(), // IDは仮で生成
         question: question,
         correctAnswer: correctAnswer,
         explanation: explanation,
@@ -560,10 +584,22 @@ addQuestionButton.addEventListener('click', async () => {
         options: options
     };
 
-    allQuestions.push(newQuestion);
-    saveAllQuestionsToLocalStorage();
-
-    alert("問題が追加されました！");
+    if (isAdminMode) {
+        // 管理者モードの場合、直接問題をallQuestionsに追加し、保存
+        allQuestions.push(newQuestionData);
+        saveAllQuestionsToLocalStorage();
+        alert("問題が追加されました！");
+        showAdminSection(); // 管理者モードの問題管理画面に戻る
+    } else {
+        // ユーザーからの依頼の場合
+        alert("問題追加の依頼を送信しました！\n（実際にはこの内容が管理者に通知されます）\n\n依頼内容:\n" + 
+              `問題: ${newQuestionData.question}\n` +
+              `正解: ${newQuestionData.correctAnswer}\n` +
+              `解説: ${newQuestionData.explanation}\n` +
+              `カテゴリ: ${newQuestionData.category}\n` +
+              `選択肢: ${newQuestionData.options.join(', ')}`);
+        initializeApp(); // 初期画面に戻る
+    }
 
     // フォームをクリア
     newQuestionText.value = '';
@@ -572,28 +608,21 @@ addQuestionButton.addEventListener('click', async () => {
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
 
-    if (isAdminMode) {
-        showAdminSection(); // 管理者モードなら問題管理画面に戻る
-    } else {
-        // 通常ユーザーの問題追加依頼の場合は、依頼送信後の処理 (今回はアラートのみ)
-        // ここに問題追加依頼の送信ロジックを実装する (例: sendEmailToAdmin(newQuestion);)
-        initializeApp(); // 初期画面に戻る
-    }
     window.scrollTo(0, 0);
 });
 
-// --- ユーザーによる問題追加依頼機能 (簡易版) ---
+// --- ユーザーによる問題追加依頼機能 ---
 showAddQuestionFormButtonUser.addEventListener('click', () => {
-    alert("この機能は現在開発中です。管理者への問題追加依頼は、管理者に直接お問い合わせください。\n\n**【今後の実装予定】**\n問題追加依頼フォームを表示し、入力内容を管理者にメールなどで送信する機能を実装します。");
-    // ここに問題追加依頼フォーム（管理者用とは異なる）を表示するロジックを実装予定
-    // 現状はアラートのみ
+    isAdminMode = false; // ユーザーモードであることを明示
+    showAddQuestionForm(false); // ユーザーモードとしてフォームを表示
 });
 
 
 // --- アプリ初期化 ---
 async function initializeApp() {
     hideAllSections(); // まず全てのセクションを隠す
-
+    isAdminMode = false; // 初期化時は必ずユーザーモード
+    
     const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
     
     if (hasQuestions) {
@@ -601,7 +630,10 @@ async function initializeApp() {
     } else {
         // 問題が読み込めなかった場合、ユーザーは問題追加依頼か、管理者に問い合わせる
         alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
-        appFooterButtons.style.display = 'flex'; // フッターボタンは表示
+        // 問題がなくてもフッターボタンは表示する
+        appFooterButtons.style.display = 'flex'; 
+        // 問題がない場合のクイズサイズモーダルは開かない
+        quizSizeModal.style.display = 'none';
     }
     window.scrollTo(0, 0);
 }
