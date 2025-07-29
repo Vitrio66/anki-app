@@ -3,74 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暗記アプリ</title> <link rel="stylesheet" href="style.css">
+    <title>暗記アプリ</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div id="quiz-section">
-            <p id="question-text"></p>
+    <div id="quiz-section" class="main-content">
+        <p id="question-text"></p>
 
-            <div id="options-container" class="options-grid">
-                </div>
-
-            <div id="result-area">
-                <p id="feedback-text"></p>
-                <p id="explanation-text"></p>
+        <div id="options-container" class="options-grid">
             </div>
 
-            <div class="quiz-buttons">
-                <button id="skip-button" class="action-button-link">回答をスキップする</button>
-                <button id="submit-answer-button" class="action-button">解答する</button>
-                <button id="next-button" class="action-button">次の問題へ</button>
-            </div>
+        <div id="result-area">
+            <p id="feedback-text"></p>
+            <p id="explanation-text"></p>
         </div>
 
-        <div id="add-question-form-section" style="display: none;">
-            <h2>新しい問題を追加</h2>
-            <div class="form-group">
-                <label for="new-question-text">問題文:</label>
-                <textarea id="new-question-text" rows="3" placeholder="ここに問題文を入力してください"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="new-option-1">選択肢1:</label>
-                <input type="text" id="new-option-1" class="new-option-input" placeholder="選択肢1">
-            </div>
-            <div class="form-group">
-                <label for="new-option-2">選択肢2:</label>
-                <input type="text" id="new-option-2" class="new-option-input" placeholder="選択肢2">
-            </div>
-            <div class="form-group">
-                <label for="new-option-3">選択肢3:</label>
-                <input type="text" id="new-option-3" class="new-option-input" placeholder="選択肢3">
-            </div>
-            <div class="form-group">
-                <label for="new-option-4">選択肢4:</label>
-                <input type="text" id="new-option-4" class="new-option-input" placeholder="選択肢4">
-            </div>
-            <div class="form-group">
-                <label for="new-correct-answer">正解の選択肢（上記と同じ内容で入力）:</label>
-                <input type="text" id="new-correct-answer" placeholder="ここに正解を入力してください">
-            </div>
-            <div class="form-group">
-                <label for="new-explanation">解説:</label>
-                <textarea id="new-explanation" rows="3" placeholder="ここに解説を入力してください"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="new-category">カテゴリ:</label>
-                <select id="new-category">
-                    <option value="計画">計画</option>
-                    <option value="環境設備">環境設備</option>
-                    <option value="構造">構造</option>
-                    <option value="法規">法規</option>
-                    <option value="その他">その他</option>
-                </select>
-            </div>
-            <button id="add-question-button" class="action-button">問題を追加する</button>
-            <button id="hide-add-question-form-button" class="action-button-link">キャンセル</button>
+        <div class="quiz-buttons">
+            <button id="skip-button" class="action-button-link">回答をスキップする</button>
+            <button id="submit-answer-button" class="action-button">解答する</button>
+            <button id="next-button" class="action-button">次の問題へ</button>
         </div>
-        
-        <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
     </div>
+
+    <div id="add-question-form-section" class="main-content" style="display: none;">
+        <h2>新しい問題を追加</h2>
+        <div class="form-group">
+            <label for="new-question-text">問題文:</label>
+            <textarea id="new-question-text" rows="3" placeholder="ここに問題文を入力してください"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="new-option-1">選択肢1:</label>
+            <input type="text" id="new-option-1" class="new-option-input" placeholder="選択肢1">
+        </div>
+        <div class="form-group">
+            <label for="new-option-2">選択肢2:</label>
+            <input type="text" id="new-option-2" class="new-option-input" placeholder="選択肢2">
+        </div>
+        <div class="form-group">
+            <label for="new-option-3">選択肢3:</label>
+            <input type="text" id="new-option-3" class="new-option-input" placeholder="選択肢3">
+        </div>
+        <div class="form-group">
+            <label for="new-option-4">選択肢4:</label>
+            <input type="text" id="new-option-4" class="new-option-input" placeholder="選択肢4">
+        </div>
+        <div class="form-group">
+            <label for="new-correct-answer">正解の選択肢（上記と同じ内容で入力）:</label>
+            <input type="text" id="new-correct-answer" placeholder="ここに正解を入力してください">
+        </div>
+        <div class="form-group">
+            <label for="new-explanation">解説:</label>
+            <textarea id="new-explanation" rows="3" placeholder="ここに解説を入力してください"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="new-category">カテゴリ:</label>
+            <select id="new-category">
+                <option value="計画">計画</option>
+                <option value="環境設備">環境設備</option>
+                <option value="構造">構造</option>
+                <option value="法規">法規</option>
+                <option value="その他">その他</option>
+            </select>
+        </div>
+        <button id="add-question-button" class="action-button">問題を追加する</button>
+        <button id="hide-add-question-form-button" class="action-button-link">キャンセル</button>
+    </div>
+    
+    <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
 
     <script src="script.js"></script>
 </body>
