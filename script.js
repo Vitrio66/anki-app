@@ -4,7 +4,7 @@
 const LOCAL_STORAGE_ALL_QUESTIONS_KEY = 'allQuestions';
 const LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY = 'mistakenQuestions';
 const GITHUB_QUESTIONS_JSON_PATH = 'questions.json';
-const ADMIN_PASSWORD = 'Testcrafter';
+const ADMIN_PASSWORD = 'Testcrafter'; // 管理者パスワード
 
 // --- ヘルパー関数 ---
 function shuffleArray(array) {
@@ -17,7 +17,8 @@ function shuffleArray(array) {
 
 /**
  * QuestionManager クラス
- * 問題データのロード、保存、追加、削除など、データ管理を担当
+ * 問題データのロード、保存、削除など、データ管理を担当
+ * ※問題追加機能は削除されました。
  */
 class QuestionManager {
     constructor() {
@@ -62,7 +63,7 @@ class QuestionManager {
                         "category": "CSS"
                     }
                 ];
-                alert("初期問題のロードに失敗しました。アプリケーションを再読み込みするか、管理者モードで問題を追加してください。");
+                alert("初期問題のロードに失敗しました。アプリケーションを再読み込みするか、管理者モードで問題を確認してください。");
             }
         }
     }
@@ -71,10 +72,7 @@ class QuestionManager {
         return [...this.allQuestions]; // 参照渡しを防ぐためコピーを返す
     }
 
-    addQuestion(newQuestion) {
-        this.allQuestions.push(newQuestion);
-        this.saveAllQuestionsToLocalStorage();
-    }
+    // addQuestion メソッドは削除されました
 
     deleteQuestion(index) {
         if (index >= 0 && index < this.allQuestions.length) {
@@ -118,60 +116,43 @@ class QuestionManager {
 /**
  * QuizApp クラス
  * アプリケーションのUI、クイズロジック、イベント処理を管理
+ * ※問題追加機能は削除されました。
  */
 class QuizApp {
     constructor() {
         this.questionManager = new QuestionManager(); // QuestionManagerのインスタンスを生成
 
         // --- DOM要素の取得 ---
-        // アプリケーションで使用するすべてのHTML要素をここで取得し、プロパティに格納します
-        this.initialQuizCountModal = document.getElementById('quiz-size-modal'); // IDを更新
-        this.initialQuizCountInput = document.getElementById('initial-quiz-size-input'); // IDを更新
-        this.startQuizButtonModal = document.getElementById('start-quiz-button'); // IDを更新
-        this.quizSection = document.getElementById('quiz-section'); // IDを更新
-        this.questionText = document.getElementById('question-text'); // IDを更新
-        this.optionsContainer = document.getElementById('options-container'); // IDを更新
-        this.feedback = document.getElementById('feedback-text'); // IDを更新
-        this.nextQuestionButton = document.getElementById('submit-answer-button'); // IDを更新
-        this.skipQuestionButton = document.getElementById('skip-button'); // IDを更新
-        this.explanationContainer = document.getElementById('result-area'); // IDを更新
-        this.explanationText = document.getElementById('explanation-text'); // IDを更新
-        this.roundIndicator = document.getElementById('round-indicator'); // IDを更新
-        this.restartButton = document.getElementById('restart-quiz-button'); // IDを更新
-        this.adminModeButton = document.getElementById('admin-mode-button'); // IDを更新
-        this.adminPanel = document.getElementById('admin-panel'); // IDを更新
-        this.closeAdminPanelButton = document.getElementById('close-admin-panel-button'); // IDを更新
-        this.questionListDiv = document.getElementById('question-list'); // IDを更新
-        this.showAddQuestionFormButton = document.getElementById('show-add-question-form-button'); // IDを更新
-        this.addQuestionFormSection = document.getElementById('add-question-form-section'); // IDを更新
-        this.closeAddQuestionFormButton = document.getElementById('close-add-question-form-button'); // IDを更新
-        this.addQuestionForm = document.getElementById('add-question-form'); // IDを更新
-        this.newQuestionText = document.getElementById('new-question-text'); // IDを更新
-        this.newOptionInputs = [
-            document.getElementById('new-option-1'),
-            document.getElementById('new-option-2'),
-            document.getElementById('new-option-3'),
-            document.getElementById('new-option-4')
-        ];
-        this.newCorrectAnswer = document.getElementById('new-correct-answer');
-        this.newExplanation = document.getElementById('new-explanation');
-        this.newCategory = document.getElementById('new-category');
-        this.requestAddQuestionButton = document.getElementById('request-add-question-button');
+        this.initialQuizCountModal = document.getElementById('quiz-size-modal');
+        this.initialQuizCountInput = document.getElementById('initial-quiz-size-input');
+        this.startQuizButtonModal = document.getElementById('start-quiz-button');
+        this.quizSection = document.getElementById('quiz-section');
+        this.questionText = document.getElementById('question-text');
+        this.optionsContainer = document.getElementById('options-container');
+        this.feedback = document.getElementById('feedback-text');
+        this.nextQuestionButton = document.getElementById('submit-answer-button');
+        this.skipQuestionButton = document.getElementById('skip-button');
+        this.explanationContainer = document.getElementById('result-area');
+        this.explanationText = document.getElementById('explanation-text');
+        this.roundIndicator = document.getElementById('round-indicator');
+        this.restartButton = document.getElementById('restart-quiz-button');
+        this.adminModeButton = document.getElementById('admin-mode-button');
+        this.adminPanel = document.getElementById('admin-panel');
+        this.closeAdminPanelButton = document.getElementById('close-admin-panel-button');
+        this.questionListDiv = document.getElementById('question-list');
+        // 問題追加フォーム関連のDOM要素は削除
         this.backToQuizFromAdminButton = document.getElementById('back-to-quiz-from-admin-button');
-        this.backToQuizFromAddFormButton = document.getElementById('back-to-quiz-from-add-form-button');
-        
-        // adminパネル内の「新しい問題を追加」ボタンもイベントリスナーに追加するため取得
-        this.showAddQuestionFormButtonAdmin = document.getElementById('show-add-question-form-button-admin'); 
+        // 問題追加フォームからの戻るボタンは削除
+
         // 合計問題数表示用の要素も取得
         this.totalQuestionsCountSpan = document.getElementById('total-questions-count');
 
-
         // --- クイズ状態変数 ---
-        this.currentQuizSet = []; // 現在のクイズで出題される問題セット
-        this.currentQuestionIndex = 0; // 現在の問題インデックス
-        this.quizRound = 1; // クイズの周回数
-        this.isQuizActive = false; // クイズがアクティブかどうか
-        this.initialQuizCount = 0; // 初回出題数
+        this.currentQuizSet = [];
+        this.currentQuestionIndex = 0;
+        this.quizRound = 1;
+        this.isQuizActive = false;
+        this.initialQuizCount = 0;
 
         // イベントリスナーを初期化
         this.initEventListeners();
@@ -192,13 +173,9 @@ class QuizApp {
         this.restartButton.addEventListener('click', () => this.restartQuiz());
         this.adminModeButton.addEventListener('click', () => this.enterAdminMode());
         this.closeAdminPanelButton.addEventListener('click', () => this.closeAdminPanel());
-        this.showAddQuestionFormButton.addEventListener('click', () => this.showAddQuestionForm());
-        this.showAddQuestionFormButtonAdmin.addEventListener('click', () => this.showAddQuestionForm()); // 管理者パネル内のボタン
-        this.closeAddQuestionFormButton.addEventListener('click', () => this.closeAddQuestionForm());
-        this.addQuestionForm.addEventListener('submit', (event) => this.handleAddQuestionSubmit(event));
-        this.requestAddQuestionButton.addEventListener('click', () => this.handleRequestAddQuestion());
+        // 問題追加フォーム関連のイベントリスナーは削除
         this.backToQuizFromAdminButton.addEventListener('click', () => this.backToQuiz());
-        this.backToQuizFromAddFormButton.addEventListener('click', () => this.backToQuiz());
+        // 問題追加フォームからの戻るボタンのイベントリスナーは削除
     }
 
     // クイズを開始するメソッド
@@ -209,16 +186,16 @@ class QuizApp {
             return;
         }
         if (this.questionManager.getAllQuestions().length === 0) {
-            alert("問題がありません。管理者モードで問題を追加してください。");
+            alert("問題がありません。管理者モードで問題を確認してください。");
             return;
         }
 
         this.initialQuizCountModal.style.display = 'none';
         this.quizSection.style.display = 'block';
-        this.showAddQuestionFormButton.style.display = 'block';
+        // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
         this.roundIndicator.style.display = 'block';
         this.adminPanel.style.display = 'none'; // 管理者パネルを非表示に
-        this.addQuestionFormSection.style.display = 'none'; // 問題追加フォームを非表示に
+        // 問題追加フォームセクションは削除
 
         this.isQuizActive = true;
         this.quizRound = 1;
@@ -336,7 +313,7 @@ class QuizApp {
         this.isQuizActive = false;
         this.quizSection.style.display = 'none';
         this.initialQuizCountModal.style.display = 'flex'; // 最初に戻る
-        this.showAddQuestionFormButton.style.display = 'none'; // 「問題を追加」ボタンを非表示
+        // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
         this.roundIndicator.style.display = 'none';
         this.questionManager.clearMistakenQuestions(); // リスタート時に間違えた問題もクリア
         this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を再表示
@@ -350,8 +327,8 @@ class QuizApp {
             this.adminPanel.style.display = 'block';
             this.quizSection.style.display = 'none';
             this.initialQuizCountModal.style.display = 'none';
-            this.showAddQuestionFormButton.style.display = 'none';
-            this.addQuestionFormSection.style.display = 'none';
+            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
+            // 問題追加フォームセクションは削除
             this.roundIndicator.style.display = 'none';
             this.displayQuestionList(); // 問題リストを表示
         } else if (password !== null) { // キャンセルボタンでnullが返るのを避ける
@@ -411,119 +388,19 @@ class QuizApp {
         }
     }
 
-    // --- 問題追加フォーム関連 ---
-    // 問題追加フォームを表示する
-    showAddQuestionForm() {
-        const password = prompt("問題追加フォームを開くにはパスワードを入力してください:");
-        if (password === ADMIN_PASSWORD) {
-            this.addQuestionFormSection.style.display = 'flex';
-            this.quizSection.style.display = 'none';
-            this.showAddQuestionFormButton.style.display = 'none';
-            this.roundIndicator.style.display = 'none'; // フォーム表示中は周回表示を非表示
-            this.adminPanel.style.display = 'none'; // 管理者パネルも閉じる
-
-            // フォームの入力欄をクリア
-            this.newQuestionText.value = '';
-            this.newCorrectAnswer.value = '';
-            this.newExplanation.value = '';
-            this.newCategory.value = '計画'; // デフォルトカテゴリ
-            this.newOptionInputs.forEach(input => input.value = '');
-
-            window.scrollTo(0, 0); // フォームにスクロール
-        } else if (password !== null) { // キャンセルボタンでnullが返るのを避ける
-            alert("パスワードが違います。");
-        }
-    }
-
-    // 問題追加フォームを閉じる
-    closeAddQuestionForm() {
-        this.addQuestionFormSection.style.display = 'none';
-        this.backToQuiz(); // 元の画面に戻る
-    }
-
-    // 問題追加フォームの送信処理
-    handleAddQuestionSubmit(event) {
-        event.preventDefault(); // フォームのデフォルト送信を防ぐ
-
-        const question = this.newQuestionText.value.trim();
-        const options = this.newOptionInputs.map(input => input.value.trim()).filter(Boolean); // 空の選択肢を除外
-        const correctAnswer = this.newCorrectAnswer.value.trim();
-        const explanation = this.newExplanation.value.trim();
-        const category = this.newCategory.value;
-
-        // 入力値のバリデーション
-        if (!question || options.length < 2 || !correctAnswer || !explanation) {
-            alert('問題文、少なくとも2つの選択肢、正解、解説は必須です。');
-            return;
-        }
-
-        if (!options.includes(correctAnswer)) {
-            alert('正解は選択肢の中から選んでください。');
-            return;
-        }
-
-        // 新しい問題オブジェクトを作成
-        const newQuestion = {
-            question: question,
-            options: options,
-            answer: correctAnswer,
-            explanation: explanation,
-            category: category
-        };
-
-        this.questionManager.addQuestion(newQuestion); // QuestionManagerに問題の追加を依頼
-        alert('新しい問題が追加されました！');
-
-        // フォームをクリア
-        this.newQuestionText.value = '';
-        this.newCorrectAnswer.value = '';
-        this.newExplanation.value = '';
-        this.newCategory.value = '計画';
-        this.newOptionInputs.forEach(input => input.value = '');
-        this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を更新
-    }
-
-    // 問題追加依頼（模擬）の処理
-    handleRequestAddQuestion() {
-        const question = this.newQuestionText.value.trim();
-        const options = this.newOptionInputs.map(input => input.value.trim()).filter(Boolean);
-        const correctAnswer = this.newCorrectAnswer.value.trim();
-        const explanation = this.newExplanation.value.trim();
-        const category = this.newCategory.value;
-
-        if (!question || options.length < 2 || !correctAnswer || !explanation) {
-            alert('問題文、少なくとも2つの選択肢、正解、解説は必須です。');
-            return;
-        }
-
-        let requestMessage = `ユーザーから問題追加依頼が届きました！\n\n`;
-        requestMessage += `問題: ${question}\n`;
-        requestMessage += `選択肢: ${options.join(', ')}\n`;
-        requestMessage += `正解: ${correctAnswer}\n`;
-        requestMessage += `解説: ${explanation}\n`;
-        requestMessage += `カテゴリ: ${category}\n\n`;
-        requestMessage += `この情報は管理者に送信されます。(現状は模擬です)`;
-
-        alert(requestMessage);
-
-        // フォームをクリア
-        this.newQuestionText.value = '';
-        this.newCorrectAnswer.value = '';
-        this.newExplanation.value = '';
-        this.newCategory.value = '計画';
-        this.newOptionInputs.forEach(input => input.value = '');
-    }
+    // 問題追加フォーム関連のメソッドはすべて削除されました
+    // showAddQuestionForm, closeAddQuestionForm, handleAddQuestionSubmit, handleRequestAddQuestion
 
     // --- UI表示切り替え共通処理 ---
     // クイズまたは初期画面に戻る共通処理
     backToQuiz() {
         if (this.isQuizActive) {
             this.quizSection.style.display = 'block';
-            this.showAddQuestionFormButton.style.display = 'block';
+            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
             this.roundIndicator.style.display = 'block';
         } else {
             this.initialQuizCountModal.style.display = 'flex';
-            this.showAddQuestionFormButton.style.display = 'none'; // クイズ非アクティブ時は表示しない
+            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
             this.roundIndicator.style.display = 'none';
         }
         this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を更新

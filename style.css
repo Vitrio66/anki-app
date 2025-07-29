@@ -208,7 +208,7 @@ h1, h2, h3 {
 }
 
 /* 管理者パネル */
-.admin-panel, .add-question-form-section {
+.admin-panel {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -219,13 +219,13 @@ h1, h2, h3 {
     text-align: left;
 }
 
-.admin-panel h2, .add-question-form-section h2 {
+.admin-panel h2 {
     text-align: center;
     margin-bottom: 25px;
     color: #0056b3;
 }
 
-.admin-buttons, .form-buttons {
+.admin-buttons {
     display: flex;
     flex-wrap: wrap; /* ボタンが複数行になっても対応 */
     justify-content: center;
@@ -289,45 +289,6 @@ h1, h2, h3 {
     background-color: #c82333;
 }
 
-/* 問題追加フォーム */
-.form-group {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
-}
-
-.form-group input[type="text"],
-.form-group textarea,
-.form-group select {
-    width: calc(100% - 22px); /* paddingとborder分を引く */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1em;
-    box-sizing: border-box; /* paddingとborderをwidthに含める */
-}
-
-.form-group textarea {
-    resize: vertical; /* 縦方向のみリサイズ可能 */
-    min-height: 80px;
-}
-
-/* フォーム内のボタン */
-.add-question-form-section .action-button {
-    background-color: #007bff;
-    margin-top: 15px;
-}
-
-.add-question-form-section .action-button:hover {
-    background-color: #0056b3;
-}
-
 /* レスポンシブデザイン */
 @media (max-width: 600px) {
     .container {
@@ -343,7 +304,7 @@ h1, h2, h3 {
         padding: 10px 15px;
     }
 
-    .quiz-buttons, .admin-buttons, .form-buttons {
+    .quiz-buttons, .admin-buttons { /* form-buttons は削除 */
         flex-direction: column;
         gap: 10px;
     }
