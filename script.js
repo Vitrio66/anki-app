@@ -3,10 +3,50 @@
 // --- 定数定義 ---
 const LOCAL_STORAGE_ALL_QUESTIONS_KEY = 'allQuestions';
 const LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY = 'mistakenQuestions';
-const GITHUB_QUESTIONS_JSON_PATH = 'questions.json';
-const ADMIN_PASSWORD = 'Testcrafter'; // 管理者パスワード
+const GITHUB_QUESTIONS_JSON_PATH = 'questions.json'; // GitHub Pages上のJSONファイルのパス
+
+// --- グローバル変数 ---
+let allQuestions = []; // 全ての問題を保持するリスト
+let currentQuizSet = []; // 現在出題中の問題セット (初回 or 不正解問題)
+let mistakenQuestions = []; // 間違えた問題を保持するリスト (再出題用)
+let answeredQuestionsInCurrentRound = []; // 現在の周回で回答済みの問題IDを保持 (スキップも含む)
+let currentQuestionIndex = 0;
+let currentQuestion;
+let selectedOptionText = null;
+let round = 0; // 現在の周回数 (0: 未開始, 1: 1周目, 2: 2周目など)
+let initialQuizSize = 0; // ユーザーが設定する初回出題数
+
+// --- UI要素の取得 ---
+const quizSizeModal = document.getElementById('quiz-size-modal'); // ★追加: モーダル
+const initialQuizSizeInput = document.getElementById('initial-quiz-size-input'); // ★追加: モーダル内の入力フィールド
+const startQuizButton = document.getElementById('start-quiz-button'); // ★追加: モーダル内の開始ボタン
+
+const roundIndicator = document.getElementById('round-indicator');
+const quizSection = document.getElementById('quiz-section');
+const questionText = document.getElementById('question-text');
+const optionsContainer = document.getElementById('options-container');
+const submitAnswerButton = document.getElementById('submit-answer-button');
+const resultArea = document.getElementById('result-area');
+const feedbackText = document.getElementById('feedback-text');
+const explanationText = document.getElementById('explanation-text');
+const nextButton = document.getElementById('next-button');
+const skipButton = document.getElementById('skip-button');
+const quizButtonsContainer = document.querySelector('.quiz-buttons');
+
+// 問題追加フォーム関連のUI要素
+const showAddQuestionFormButton = document.getElementById('show-add-question-form-button');
+const addQuestionFormSection = document.getElementById('add-question-form-section');
+const newQuestionText = document.getElementById('new-question-text');
+const newCorrectAnswer = document.getElementById('new-correct-answer');
+const newExplanation = document.getElementById('new-explanation');
+const newCategory = document.getElementById('new-category');
+const newOptionInputs = document.querySelectorAll('.new-option-input');
+const addQuestionButton = document.getElementById('add-question-button');
+const hideAddQuestionFormButton = document.getElementById('hide-add-question-form-button');
 
 // --- ヘルパー関数 ---
+
+// 配列をランダムに並べ替える
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -15,414 +55,487 @@ function shuffleArray(array) {
     return array;
 }
 
+// 選択肢の選択状態を解除する
+function clearOptionSelection() {
+    const allOptions = document.querySelectorAll('.option-button');
+    allOptions.forEach(btn => btn.classList.remove('selected', 'correct-option', 'incorrect-option'));
+}
+
+// 全ての選択肢ボタンをクリックできないようにする
+function disableOptions() {
+    const optionButtons = document.querySelectorAll('.option-button');
+    optionButtons.forEach(button => {
+        button.style.pointerEvents = 'none';
+    });
+}
+
+// 間違えた問題リストに特定の質問が含まれているかチェック
+function isQuestionMistaken(questionId) {
+    return mistakenQuestions.some(q => q.id === questionId);
+}
+
+// 間違えた問題をリストに追加し、ローカルストレージに保存
+function addMistakenQuestion(question) {
+    // 間違えた問題リストに既に存在しなければ追加
+    if (!isQuestionMistaken(question.id)) {
+        mistakenQuestions.push(question);
+        saveMistakenQuestions();
+    }
+}
+
+// 最大IDを取得して新しい問題のIDを生成する
+function getNextQuestionId() {
+    if (allQuestions.length === 0) {
+        return 1;
+    }
+    const maxId = Math.max(...allQuestions.map(q => q.id));
+    return maxId + 1;
+}
+
+// --- ローカルストレージ関連の関数 ---
+
+// 間違えた問題をローカルストレージから読み込む
+function loadMistakenQuestions() {
+    const data = localStorage.getItem(LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY);
+    return data ? JSON.parse(data) : [];
+}
+
+// 間違えた問題をローカルストレージに保存する
+function saveMistakenQuestions() {
+    localStorage.setItem(LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY, JSON.stringify(mistakenQuestions));
+}
+
+// 全ての問題をローカルストレージに保存する（問題追加フォームから追加された際に使用）
+function saveAllQuestionsToLocalStorage() {
+    localStorage.setItem(LOCAL_STORAGE_ALL_QUESTIONS_KEY, JSON.stringify(allQuestions));
+}
+
+// --- メインロジック ---
+
 /**
- * QuestionManager クラス
- * 問題データのロード、保存、削除など、データ管理を担当
- * ※問題追加機能は削除されました。
+ * 全ての問題データを読み込む関数
+ * 1. ローカルストレージにデータがあればそれを優先的に読み込む。
+ * 2. ローカルストレージにデータがなければ、GitHub Pages上のJSONファイルを読み込む。
+ * 3. GitHub Pagesから読み込んだデータをローカルストレージに保存する（初回アクセス時など）。
  */
-class QuestionManager {
-    constructor() {
-        this.allQuestions = [];
-        this.mistakenQuestions = [];
-    }
+async function loadAllQuestions() {
+    const storedQuestions = localStorage.getItem(LOCAL_STORAGE_ALL_QUESTIONS_KEY);
 
-    async loadQuestions() {
-        // 間違えた問題は別途ロード
-        this.mistakenQuestions = this.loadMistakenQuestionsFromLocalStorage();
-
-        const storedQuestions = this.loadAllQuestionsFromLocalStorage();
-        if (storedQuestions) {
-            this.allQuestions = storedQuestions;
-            console.log("Local Storageから問題をロードしました。", this.allQuestions);
-        } else {
-            try {
-                const response = await fetch(GITHUB_QUESTIONS_JSON_PATH);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                this.allQuestions = data;
-                this.saveAllQuestionsToLocalStorage(); // 初回ロード時にLocalStorageに保存
-                console.log("GitHub Pagesから問題をロードしました。", this.allQuestions);
-            } catch (error) {
-                console.error("初期問題のロード中にエラーが発生しました:", error);
-                // エラー時はダミーデータで続行することも検討
-                this.allQuestions = [
-                    {
-                        "question": "JavaScriptで変数を宣言するキーワードとして適切でないものはどれ？",
-                        "options": ["var", "let", "const", "set"],
-                        "answer": "set",
-                        "explanation": "JavaScriptでは`var`, `let`, `const`が変数を宣言するために使われます。`set`は変数の宣言には使いません。",
-                        "category": "JavaScript"
-                    },
-                    {
-                        "question": "HTMLの要素を非表示にするCSSプロパティはどれ？",
-                        "options": ["visibility: hidden;", "display: none;", "opacity: 0;", "hidden: true;"],
-                        "answer": "display: none;",
-                        "explanation": "`display: none;`は要素を完全に削除し、スペースを占有しません。`visibility: hidden;`は要素を非表示にしますが、スペースは占有します。",
-                        "category": "CSS"
-                    }
-                ];
-                alert("初期問題のロードに失敗しました。アプリケーションを再読み込みするか、管理者モードで問題を確認してください。");
-            }
+    if (storedQuestions) {
+        try {
+            allQuestions = JSON.parse(storedQuestions);
+            console.log("問題をローカルストレージから読み込みました。");
+        } catch (e) {
+            console.error("ローカルストレージのデータが壊れています。GitHub Pagesから再読み込みします。", e);
+            await fetchQuestionsFromGitHub();
         }
+    } else {
+        await fetchQuestionsFromGitHub();
     }
 
-    getAllQuestions() {
-        return [...this.allQuestions]; // 参照渡しを防ぐためコピーを返す
+    if (allQuestions.length === 0) {
+        // 問題がない場合のUI表示調整
+        questionText.textContent = "現在、問題がありません。GitHub Pagesのquestions.jsonファイルを確認するか、新しい問題を追加してください。";
+        optionsContainer.innerHTML = '';
+        submitAnswerButton.style.display = 'none';
+        nextButton.style.display = 'none';
+        skipButton.style.display = 'none';
+        resultArea.style.display = 'none';
+        quizButtonsContainer.style.display = 'none';
+        roundIndicator.style.display = 'none';
+        
+        quizSection.style.display = 'flex'; // 問題なしメッセージを表示するために表示
+        showAddQuestionFormButton.style.display = 'inline-block';
+        return false; // 問題がないことを示す
     }
+    return true; // 問題があることを示す
+}
 
-    // addQuestion メソッドは削除されました
-
-    deleteQuestion(index) {
-        if (index >= 0 && index < this.allQuestions.length) {
-            this.allQuestions.splice(index, 1);
-            this.saveAllQuestionsToLocalStorage();
-            return true;
+/**
+ * GitHub Pages上のJSONファイルから問題を読み込む
+ */
+async function fetchQuestionsFromGitHub() {
+    try {
+        const response = await fetch(GITHUB_QUESTIONS_JSON_PATH);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - Could not load ${GITHUB_QUESTIONS_JSON_PATH}`);
         }
-        return false;
-    }
-
-    // ローカルストレージ関連のプライベートメソッド（クラス内部でのみ使用）
-    loadAllQuestionsFromLocalStorage() {
-        const data = localStorage.getItem(LOCAL_STORAGE_ALL_QUESTIONS_KEY);
-        return data ? JSON.parse(data) : null;
-    }
-
-    saveAllQuestionsToLocalStorage() {
-        localStorage.setItem(LOCAL_STORAGE_ALL_QUESTIONS_KEY, JSON.stringify(this.allQuestions));
-    }
-
-    loadMistakenQuestionsFromLocalStorage() {
-        const data = localStorage.getItem(LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY);
-        return data ? JSON.parse(data) : [];
-    }
-
-    saveMistakenQuestionsToLocalStorage(questions) {
-        this.mistakenQuestions = questions; // 内部の状態も更新
-        localStorage.setItem(LOCAL_STORAGE_MISTAKEN_QUESTIONS_KEY, JSON.stringify(this.mistakenQuestions));
-    }
-
-    getMistakenQuestions() {
-        return [...this.mistakenQuestions];
-    }
-
-    clearMistakenQuestions() {
-        this.mistakenQuestions = [];
-        this.saveMistakenQuestionsToLocalStorage([]);
+        const data = await response.json();
+        allQuestions = data;
+        console.log("問題をGitHub Pagesから読み込みました:", allQuestions);
+        saveAllQuestionsToLocalStorage();
+    } catch (error) {
+        console.error("GitHub Pagesからの問題読み込みに失敗しました:", error);
+        alert(`問題の読み込みに失敗しました。\n原因: ${error.message}\nJSONファイルが正しく設定されているか、GitHub PagesのURLが正しいか確認してください。`);
+        allQuestions = []; // 問題が読み込めなかった場合は空にする
     }
 }
 
 /**
- * QuizApp クラス
- * アプリケーションのUI、クイズロジック、イベント処理を管理
- * ※問題追加機能は削除されました。
+ * クイズを初期化し、出題する問題セットを準備する
  */
-class QuizApp {
-    constructor() {
-        this.questionManager = new QuestionManager(); // QuestionManagerのインスタンスを生成
+function startQuiz(quizSize) {
+    initialQuizSize = quizSize; // ユーザーが設定した初回出題数を保存
+    round = 1; // 1周目から開始
+    mistakenQuestions = []; // 新しいクイズ開始時は間違えた問題リストをリセット
+    saveMistakenQuestions(); // ローカルストレージもクリア
 
-        // --- DOM要素の取得 ---
-        this.initialQuizCountModal = document.getElementById('quiz-size-modal');
-        this.initialQuizCountInput = document.getElementById('initial-quiz-size-input');
-        this.startQuizButtonModal = document.getElementById('start-quiz-button');
-        this.quizSection = document.getElementById('quiz-section');
-        this.questionText = document.getElementById('question-text');
-        this.optionsContainer = document.getElementById('options-container');
-        this.feedback = document.getElementById('feedback-text');
-        this.nextQuestionButton = document.getElementById('submit-answer-button');
-        this.skipQuestionButton = document.getElementById('skip-button');
-        this.explanationContainer = document.getElementById('result-area');
-        this.explanationText = document.getElementById('explanation-text');
-        this.roundIndicator = document.getElementById('round-indicator');
-        this.restartButton = document.getElementById('restart-quiz-button');
-        this.adminModeButton = document.getElementById('admin-mode-button');
-        this.adminPanel = document.getElementById('admin-panel');
-        this.closeAdminPanelButton = document.getElementById('close-admin-panel-button');
-        this.questionListDiv = document.getElementById('question-list');
-        // 問題追加フォーム関連のDOM要素は削除
-        this.backToQuizFromAdminButton = document.getElementById('back-to-quiz-from-admin-button');
-        // 問題追加フォームからの戻るボタンは削除
+    resetQuizSet(); // 問題セットをリセットして初回出題準備
 
-        // 合計問題数表示用の要素も取得
-        this.totalQuestionsCountSpan = document.getElementById('total-questions-count');
-
-        // --- クイズ状態変数 ---
-        this.currentQuizSet = [];
-        this.currentQuestionIndex = 0;
-        this.quizRound = 1;
-        this.isQuizActive = false;
-        this.initialQuizCount = 0;
-
-        // イベントリスナーを初期化
-        this.initEventListeners();
+    // 問題がまだない場合はここで終了
+    if (currentQuizSet.length === 0) {
+        endQuiz(allQuestions.length === 0 ? "問題がありません。" : "全ての学習が終了しました！よく頑張りました！");
+        return;
     }
 
-    // アプリケーションの初期化処理
-    async init() {
-        await this.questionManager.loadQuestions(); // 問題データをロード
-        this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を表示
-        this.initialQuizCountModal.style.display = 'flex'; // 初回問題数設定モーダルを表示
-    }
+    quizSizeModal.style.display = 'none'; // モーダルを隠す
+    quizSection.style.display = 'flex'; // クイズセクションを表示
+    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンを隠す
+    
+    displayQuestion();
+}
 
-    // すべてのイベントリスナーを設定するメソッド
-    initEventListeners() {
-        this.startQuizButtonModal.addEventListener('click', () => this.startQuiz());
-        this.nextQuestionButton.addEventListener('click', () => this.nextQuestion());
-        this.skipQuestionButton.addEventListener('click', () => this.skipQuestion());
-        this.restartButton.addEventListener('click', () => this.restartQuiz());
-        this.adminModeButton.addEventListener('click', () => this.enterAdminMode());
-        this.closeAdminPanelButton.addEventListener('click', () => this.closeAdminPanel());
-        // 問題追加フォーム関連のイベントリスナーは削除
-        this.backToQuizFromAdminButton.addEventListener('click', () => this.backToQuiz());
-        // 問題追加フォームからの戻るボタンのイベントリスナーは削除
-    }
+/**
+ * 現在の周回と出題する問題セットを管理する
+ */
+function resetQuizSet() {
+    answeredQuestionsInCurrentRound = []; // 現在の周回で回答済みの問題IDをリセット
 
-    // クイズを開始するメソッド
-    startQuiz() {
-        this.initialQuizCount = parseInt(this.initialQuizCountInput.value, 10);
-        if (isNaN(this.initialQuizCount) || this.initialQuizCount <= 0) {
-            alert("有効な問題数を入力してください。");
+    if (round === 1) {
+        // 1周目: 全体の問題からランダムにinitialQuizSizeだけ出題
+        const availableQuestions = allQuestions.filter(q => !mistakenQuestions.some(mq => mq.id === q.id));
+        const shuffledQuestions = shuffleArray([...availableQuestions]);
+        currentQuizSet = shuffledQuestions.slice(0, initialQuizSize);
+
+        // 出題数が全問題数より多い場合は、利用可能な全問題を出題
+        if (initialQuizSize > availableQuestions.length) {
+            currentQuizSet = shuffledQuestions;
+        }
+        console.log("1周目開始。出題問題数:", currentQuizSet.length);
+    } else {
+        // 2周目以降: 間違えた問題のみをランダムに再出題
+        if (mistakenQuestions.length === 0) {
+            endQuiz("全ての学習が終了しました！よく頑張りました！"); // 間違えた問題がなければクイズ終了
             return;
         }
-        if (this.questionManager.getAllQuestions().length === 0) {
-            alert("問題がありません。管理者モードで問題を確認してください。");
-            return;
-        }
-
-        this.initialQuizCountModal.style.display = 'none';
-        this.quizSection.style.display = 'block';
-        // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
-        this.roundIndicator.style.display = 'block';
-        this.adminPanel.style.display = 'none'; // 管理者パネルを非表示に
-        // 問題追加フォームセクションは削除
-
-        this.isQuizActive = true;
-        this.quizRound = 1;
-        this.questionManager.clearMistakenQuestions(); // 間違えた問題を初期化
-        this.currentQuestionIndex = 0;
-
-        // 初回は全問題から指定された数だけ出題
-        this.currentQuizSet = shuffleArray(this.questionManager.getAllQuestions()).slice(0, this.initialQuizCount);
-        this.displayQuestion();
+        currentQuizSet = shuffleArray([...mistakenQuestions]);
+        mistakenQuestions = []; // 次の周回のために間違えた問題リストをリセット
+        saveMistakenQuestions(); // ローカルストレージも更新
+        console.log(`${round}周目開始。間違えた問題数:`, currentQuizSet.length);
     }
+    currentQuestionIndex = 0; // 問題インデックスをリセット
+    updateRoundIndicator(); // 周回表示を更新
+}
 
-    // 現在の問題をUIに表示するメソッド
-    displayQuestion() {
-        this.clearOptionSelection();
-        this.feedback.textContent = '';
-        this.explanationContainer.style.display = 'none';
-        this.nextQuestionButton.style.display = 'none';
-        this.skipQuestionButton.style.display = 'inline-block'; // スキップボタンを表示
-
-        if (this.currentQuestionIndex < this.currentQuizSet.length) {
-            const question = this.currentQuizSet[this.currentQuestionIndex];
-            this.questionText.textContent = question.question;
-            this.optionsContainer.innerHTML = '';
-            shuffleArray([...question.options]).forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.classList.add('option-button'); // CSSクラスを追加
-                button.addEventListener('click', () => this.selectOption(button, option, question));
-                this.optionsContainer.appendChild(button);
-            });
-            this.updateRoundIndicator();
+/**
+ * 周回表示を更新する
+ */
+function updateRoundIndicator() {
+    if (round > 0) { // roundが0でない（クイズ開始後）
+        if (currentQuizSet.length > 0) { // 問題が残っている場合のみ表示
+            roundIndicator.textContent = `${round}周目`;
+            roundIndicator.style.display = 'block';
         } else {
-            // 全問終了
-            this.endQuizRound();
+            roundIndicator.style.display = 'none'; // 問題がなければ非表示
         }
-    }
-
-    // 選択肢が選ばれた際の処理
-    selectOption(selectedButton, selectedAnswer, question) {
-        this.optionsContainer.querySelectorAll('button').forEach(button => {
-            button.disabled = true; // 他のボタンを無効化
-        });
-
-        let mistakenQuestions = this.questionManager.getMistakenQuestions(); // ここで取得
-        if (selectedAnswer === question.answer) {
-            selectedButton.classList.add('correct');
-            this.feedback.textContent = '正解！';
-        } else {
-            selectedButton.classList.add('incorrect');
-            this.feedback.textContent = '不正解！';
-            if (!mistakenQuestions.some(q => q.question === question.question)) {
-                mistakenQuestions.push(question);
-                this.questionManager.saveMistakenQuestionsToLocalStorage(mistakenQuestions); // 更新して保存
-            }
-            // 正解のオプションをハイライト
-            this.optionsContainer.querySelectorAll('button').forEach(button => {
-                if (button.textContent === question.answer) {
-                    button.classList.add('correct');
-                }
-            });
-        }
-
-        this.explanationText.textContent = question.explanation;
-        this.explanationContainer.style.display = 'block';
-        this.nextQuestionButton.style.display = 'inline-block';
-        this.skipQuestionButton.style.display = 'none'; // 解答したらスキップボタンを非表示
-    }
-
-    // 次の問題へ進む
-    nextQuestion() {
-        this.currentQuestionIndex++;
-        this.displayQuestion();
-    }
-
-    // 問題をスキップする
-    skipQuestion() {
-        const question = this.currentQuizSet[this.currentQuestionIndex];
-        let mistakenQuestions = this.questionManager.getMistakenQuestions(); // ここで取得
-        if (!mistakenQuestions.some(q => q.question === question.question)) {
-            mistakenQuestions.push(question);
-            this.questionManager.saveMistakenQuestionsToLocalStorage(mistakenQuestions); // 更新して保存
-        }
-        // スキップした場合は不正解として扱い、正解を表示
-        this.optionsContainer.querySelectorAll('button').forEach(button => {
-            button.disabled = true; // 他のボタンを無効化
-            if (button.textContent === question.answer) {
-                button.classList.add('correct');
-            }
-        });
-        this.feedback.textContent = 'スキップしました (不正解として記録)';
-        this.explanationText.textContent = question.explanation;
-        this.explanationContainer.style.display = 'block';
-        this.nextQuestionButton.style.display = 'inline-block';
-        this.skipQuestionButton.style.display = 'none'; // 解答したらスキップボタンを非表示
-    }
-
-    // クイズの1周が終了した際の処理
-    endQuizRound() {
-        let mistakenQuestions = this.questionManager.getMistakenQuestions(); // ここで取得
-        if (mistakenQuestions.length > 0) {
-            alert(`${this.quizRound}周目終了！間違えた問題が${mistakenQuestions.length}問あります。もう一度挑戦しましょう！`);
-            this.quizRound++;
-            this.currentQuizSet = shuffleArray([...mistakenQuestions]); // 間違えた問題のみで次の周回
-            this.questionManager.clearMistakenQuestions(); // 間違えた問題をリセット
-            this.currentQuestionIndex = 0;
-            this.displayQuestion();
-        } else {
-            alert("全問正解です！おめでとうございます！");
-            this.restartQuiz(); // 全問正解の場合は再スタートと同じUIへ
-        }
-    }
-
-    // クイズを再スタートする
-    restartQuiz() {
-        this.isQuizActive = false;
-        this.quizSection.style.display = 'none';
-        this.initialQuizCountModal.style.display = 'flex'; // 最初に戻る
-        // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
-        this.roundIndicator.style.display = 'none';
-        this.questionManager.clearMistakenQuestions(); // リスタート時に間違えた問題もクリア
-        this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を再表示
-    }
-
-    // --- 管理者モード関連 ---
-    // 管理者モードに入る
-    enterAdminMode() {
-        const password = prompt("管理者モードに入るにはパスワードを入力してください:");
-        if (password === ADMIN_PASSWORD) {
-            this.adminPanel.style.display = 'block';
-            this.quizSection.style.display = 'none';
-            this.initialQuizCountModal.style.display = 'none';
-            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
-            // 問題追加フォームセクションは削除
-            this.roundIndicator.style.display = 'none';
-            this.displayQuestionList(); // 問題リストを表示
-        } else if (password !== null) { // キャンセルボタンでnullが返るのを避ける
-            alert("パスワードが違います。");
-        }
-    }
-
-    // 管理者パネルを閉じる
-    closeAdminPanel() {
-        this.adminPanel.style.display = 'none';
-        this.backToQuiz(); // 元の画面に戻る
-    }
-
-    // 問題リストを表示する
-    displayQuestionList() {
-        this.questionListDiv.innerHTML = '';
-        const allQuestions = this.questionManager.getAllQuestions();
-        if (allQuestions.length === 0) {
-            this.questionListDiv.innerHTML = '<p>問題がまだありません。</p>';
-            return;
-        }
-        allQuestions.forEach((q, index) => {
-            const questionItem = document.createElement('div');
-            questionItem.classList.add('question-item');
-            questionItem.innerHTML = `
-                <p><strong>Q${index + 1}:</strong> ${q.question}</p>
-                <ul>
-                    ${q.options.map(opt => `<li>${opt}</li>`).join('')}
-                </ul>
-                <p><strong>正解:</strong> ${q.answer}</p>
-                <p><strong>解説:</strong> ${q.explanation}</p>
-                <p><strong>カテゴリ:</strong> ${q.category || '未設定'}</p>
-                <button class="delete-button" data-index="${index}">削除</button>
-            `;
-            this.questionListDiv.appendChild(questionItem);
-        });
-
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', (event) => {
-                const indexToDelete = parseInt(event.target.dataset.index, 10);
-                this.deleteQuestion(indexToDelete);
-            });
-        });
-    }
-
-    // 問題を削除する
-    deleteQuestion(index) {
-        const allQuestions = this.questionManager.getAllQuestions();
-        if (confirm(`本当にQ${index + 1}: 「${allQuestions[index].question}」を削除しますか？`)) {
-            if (this.questionManager.deleteQuestion(index)) { // QuestionManagerに削除を依頼
-                alert("問題が削除されました。");
-                this.displayQuestionList(); // リストを更新
-                this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を更新
-            } else {
-                alert("問題の削除に失敗しました。");
-            }
-        }
-    }
-
-    // 問題追加フォーム関連のメソッドはすべて削除されました
-    // showAddQuestionForm, closeAddQuestionForm, handleAddQuestionSubmit, handleRequestAddQuestion
-
-    // --- UI表示切り替え共通処理 ---
-    // クイズまたは初期画面に戻る共通処理
-    backToQuiz() {
-        if (this.isQuizActive) {
-            this.quizSection.style.display = 'block';
-            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
-            this.roundIndicator.style.display = 'block';
-        } else {
-            this.initialQuizCountModal.style.display = 'flex';
-            // 「問題を追加」ボタンは削除されたため、表示ロジックも削除
-            this.roundIndicator.style.display = 'none';
-        }
-        this.totalQuestionsCountSpan.textContent = this.questionManager.getAllQuestions().length; // 合計問題数を更新
-    }
-
-    // 選択肢の表示をクリアする（スタイルと無効化の解除）
-    clearOptionSelection() {
-        this.optionsContainer.querySelectorAll('button').forEach(button => {
-            button.classList.remove('selected', 'correct', 'incorrect');
-            button.disabled = false;
-        });
-    }
-
-    // 周回数と進捗表示を更新する
-    updateRoundIndicator() {
-        this.roundIndicator.textContent = `${this.quizRound}周目 (${this.currentQuestionIndex + 1}/${this.currentQuizSet.length})`;
+    } else {
+        roundIndicator.style.display = 'none'; // クイズ開始前は非表示
     }
 }
 
-// アプリケーションのエントリポイント
-// DOMContentLoadedイベントが発生したら、QuizAppのインスタンスを作成し、初期化処理を開始します。
-document.addEventListener('DOMContentLoaded', () => {
-    const app = new QuizApp();
-    app.init();
+/**
+ * クイズを終了する
+ */
+function endQuiz(message) {
+    questionText.textContent = message;
+    optionsContainer.innerHTML = '';
+    optionsContainer.style.display = 'none';
+    submitAnswerButton.style.display = 'none';
+    skipButton.style.display = 'none';
+    nextButton.style.display = 'none';
+    resultArea.style.display = 'none';
+    quizButtonsContainer.style.display = 'none';
+    roundIndicator.style.display = 'none';
+    showAddQuestionFormButton.style.display = 'inline-block';
+    
+    alert(message);
+    window.scrollTo(0, 0);
+    // クイズ終了後、再度問題数設定モーダルを表示するかどうかは要件による
+    // 今回は問題追加ボタンを表示し、完全に終了としています。
+    // もし再挑戦させたい場合は showQuizSizeModal(); を呼ぶ
+}
+
+
+// 問題と選択肢を画面に表示する
+function displayQuestion() {
+    if (currentQuizSet.length === 0) {
+        // currentQuizSetが空の場合（問題が初回で全くない場合や、不正解問題が全て終わった場合）
+        endQuiz(allQuestions.length === 0 ? "現在、問題がありません。" : "全ての学習が終了しました！よく頑張りました！");
+        return;
+    }
+
+    currentQuestion = currentQuizSet[currentQuestionIndex];
+    questionText.textContent = currentQuestion.question;
+
+    optionsContainer.innerHTML = '';
+    selectedOptionText = null;
+
+    feedbackText.textContent = '';
+    explanationText.textContent = '';
+    resultArea.classList.remove('correct', 'incorrect');
+    resultArea.style.display = 'none';
+    nextButton.style.display = 'none';
+    submitAnswerButton.style.display = 'inline-block';
+    skipButton.style.display = 'inline-block';
+    optionsContainer.style.pointerEvents = 'auto';
+    clearOptionSelection();
+    quizButtonsContainer.style.display = 'flex';
+    showAddQuestionFormButton.style.display = 'none'; // クイズ中は問題追加ボタンを隠す
+
+    // ★修正点1: 「解答する」ボタンを初期状態で無効にする
+    submitAnswerButton.disabled = true; 
+    console.log("displayQuestion: 解答ボタンを無効にしました。", submitAnswerButton.disabled); // ★追加
+
+    const shuffledOptions = shuffleArray([...currentQuestion.options]);
+
+    shuffledOptions.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = `${index + 1}. ${option}`;
+        button.dataset.option = option;
+        button.classList.add('option-button');
+
+        button.addEventListener('click', () => {
+            clearOptionSelection();
+            button.classList.add('selected');
+            selectedOptionText = option;
+            // ★修正点2: 選択肢が選ばれたら「解答する」ボタンを有効にする
+            submitAnswerButton.disabled = false; 
+            console.log("選択肢がクリックされました。解答ボタンを有効にしました。", submitAnswerButton.disabled); // ★追加
+        });
+        optionsContainer.appendChild(button);
+    });
+
+    updateRoundIndicator(); // 周回表示を更新
+}
+
+// あなたの答え（選択肢）が正しいかチェックする
+function checkAnswer() {
+    if (selectedOptionText === null) {
+        alert("選択肢を選んでください。");
+        return;
+    }
+
+    const userAnswer = selectedOptionText;
+    const correctAnswer = currentQuestion.correctAnswer;
+
+    disableOptions(); // 選択肢を無効化
+
+    const optionButtons = document.querySelectorAll('.option-button');
+    optionButtons.forEach(button => {
+        if (button.dataset.option === correctAnswer) {
+            button.classList.add('correct-option');
+        }
+        if (button.dataset.option === userAnswer && userAnswer.toLowerCase() !== correctAnswer.toLowerCase()) {
+             button.classList.add('incorrect-option');
+        }
+    });
+
+    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+        feedbackText.textContent = "正解！";
+        feedbackText.className = 'correct'; // 緑色に
+    } else {
+        feedbackText.textContent = "不正解...";
+        feedbackText.className = 'incorrect'; // 赤色に
+        addMistakenQuestion(currentQuestion); // 間違えた問題を追加
+    }
+    explanationText.textContent = `正解は「${correctAnswer}」です。\n${currentQuestion.explanation}`;
+    resultArea.style.display = 'block';
+
+    submitAnswerButton.style.display = 'none';
+    skipButton.style.display = 'none';
+    nextButton.style.display = 'inline-block';
+
+    answeredQuestionsInCurrentRound.push(currentQuestion.id); // 現在の周回で回答済みとして記録
+}
+
+// 「解答する」ボタンのイベントリスナー
+// ★確認・修正点3: このイベントリスナーが適切に設定されているかを確認
+submitAnswerButton.addEventListener('click', checkAnswer); 
+
+
+// 「回答をスキップする」機能
+skipButton.addEventListener('click', () => {
+    // 不正解としてカウントし、間違えた問題リストに追加
+    addMistakenQuestion(currentQuestion);
+
+    // 解答済みの状態にする（選択肢を無効化し、正解を表示）
+    disableOptions();
+    const correctAnswer = currentQuestion.correctAnswer;
+    const optionButtons = document.querySelectorAll('.option-button');
+    optionButtons.forEach(button => {
+        if (button.dataset.option === correctAnswer) {
+            button.classList.add('correct-option'); // 正解を表示
+        }
+    });
+
+    feedbackText.textContent = "スキップしました。";
+    feedbackText.className = 'incorrect'; // スキップは不正解扱い
+    explanationText.textContent = `正解は「${correctAnswer}」です。\n${currentQuestion.explanation}`;
+    resultArea.style.display = 'block';
+
+    submitAnswerButton.style.display = 'none';
+    skipButton.style.display = 'none';
+    nextButton.style.display = 'inline-block';
+
+    answeredQuestionsInCurrentRound.push(currentQuestion.id); // 現在の周回で回答済みとして記録
 });
+
+// 「次の問題へ」ボタン
+nextButton.addEventListener('click', () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < currentQuizSet.length) {
+        // まだ現在の問題セットに問題が残っている場合
+        displayQuestion();
+        window.scrollTo(0, 0);
+    } else {
+        // 現在の問題セットを全て回答し終えた場合
+        // 全問回答済みで、かつ不正解問題がまだある場合のみ次の周回へ
+        if (mistakenQuestions.length > 0) {
+            round++; // 次の周回へ
+            resetQuizSet(); // 新しい問題セットを準備（間違えた問題があればそれを出題）
+            if (currentQuizSet.length > 0) {
+                displayQuestion();
+                window.scrollTo(0, 0);
+            } else {
+                // ここには到達しないはずだが念のため
+                endQuiz("全ての学習が終了しました！よく頑張りました！");
+            }
+        } else {
+            // 全ての問題（初回、間違えた問題も含む）が終了した場合
+            endQuiz("全ての学習が終了しました！よく頑張りました！");
+        }
+    }
+});
+
+// 「問題を追加」ボタン（表示）
+showAddQuestionFormButton.addEventListener('click', () => {
+    addQuestionFormSection.style.display = 'flex';
+    quizSection.style.display = 'none';
+    showAddQuestionFormButton.style.display = 'none';
+    roundIndicator.style.display = 'none'; // フォーム表示中は周回表示を非表示
+
+    // フォームの入力欄をクリア
+    newQuestionText.value = '';
+    newCorrectAnswer.value = '';
+    newExplanation.value = '';
+    newCategory.value = '計画';
+    newOptionInputs.forEach(input => input.value = '');
+
+    window.scrollTo(0, 0);
+});
+
+// 「キャンセル」ボタン（問題追加フォームを隠す）
+hideAddQuestionFormButton.addEventListener('click', () => {
+    addQuestionFormSection.style.display = 'none';
+    // 問題追加フォームを閉じた後、クイズを再開するか、問題数設定モーダルを表示するかを判断
+    if (round > 0 && currentQuizSet.length > 0) { // クイズが進行中で問題が残っている場合
+        quizSection.style.display = 'flex';
+        showAddQuestionFormButton.style.display = 'inline-block'; // クイズ継続中は問題追加ボタンを再び表示
+        displayQuestion(); // 現在の問題を表示し直す
+    } else { // クイズがまだ始まっていないか、完全に終了している場合
+        initializeApp(); // アプリを再初期化して問題数モーダルから開始
+    }
+    window.scrollTo(0, 0);
+});
+
+// 「問題を追加する」ボタン（問題追加フォームから）
+addQuestionButton.addEventListener('click', async () => { // asyncを追加
+    const question = newQuestionText.value.trim();
+    const correctAnswer = newCorrectAnswer.value.trim();
+    const explanation = newExplanation.value.trim();
+    const category = newCategory.value;
+    const options = Array.from(newOptionInputs).map(input => input.value.trim());
+
+    // 入力チェック
+    if (!question || !correctAnswer || !explanation || options.some(opt => !opt)) {
+        alert("全ての問題項目と4つの選択肢を埋めてください。");
+        return;
+    }
+    if (!options.includes(correctAnswer)) {
+        alert("選択肢の中に正解の回答が含まれていません。");
+        return;
+    }
+
+    const newQuestion = {
+        id: getNextQuestionId(),
+        question: question,
+        correctAnswer: correctAnswer,
+        explanation: explanation,
+        category: category,
+        options: options
+    };
+
+    allQuestions.push(newQuestion); // 全ての問題リストに追加
+    saveAllQuestionsToLocalStorage(); // ローカルストレージに保存
+
+    alert("問題が追加されました！この問題は、あなたのブラウザにのみ保存されます。GitHub Pages上のquestions.jsonは更新されません。");
+
+    // フォームをクリア
+    newQuestionText.value = '';
+    newCorrectAnswer.value = '';
+    newExplanation.value = '';
+    newCategory.value = '計画';
+    newOptionInputs.forEach(input => input.value = '');
+
+    // 問題を追加したら、問題数設定モーダルに戻る
+    addQuestionFormSection.style.display = 'none';
+    await initializeApp(); // 問題を追加したので、アプリを再初期化して問題数モーダルを表示
+    window.scrollTo(0, 0);
+});
+
+// --- アプリ初期化 ---
+async function initializeApp() {
+    quizSection.style.display = 'none'; // クイズセクションを非表示
+    addQuestionFormSection.style.display = 'none'; // 問題追加フォームを非表示
+    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンも最初は非表示
+
+    const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
+    if (hasQuestions) {
+        showQuizSizeModal(); // 問題があれば問題数設定モーダルを表示
+    } else {
+        // 問題が読み込めなかった場合、問題追加ボタンだけ表示してユーザーに入力を促す
+        showAddQuestionFormButton.style.display = 'inline-block';
+        quizSizeModal.style.display = 'none';
+    }
+    roundIndicator.style.display = 'none'; // 初期状態では周回表示を非表示
+    window.scrollTo(0, 0);
+}
+
+// 問題数設定モーダルを表示する関数
+function showQuizSizeModal() {
+    quizSizeModal.style.display = 'flex';
+    // 問題数がallQuestions.lengthより多い場合は、allQuestions.lengthを上限とする
+    initialQuizSizeInput.max = allQuestions.length;
+    // デフォルト値を全問題数か10の少ない方に設定
+    initialQuizSizeInput.value = Math.min(10, allQuestions.length);
+    // 問題追加ボタンを再度表示 (モーダルの上に出るように)
+    showAddQuestionFormButton.style.display = 'inline-block';
+}
+
+// モーダルからクイズ開始ボタンのイベントリスナー
+startQuizButton.addEventListener('click', () => {
+    let size = parseInt(initialQuizSizeInput.value, 10);
+    if (isNaN(size) || size <= 0) {
+        alert("有効な問題数を入力してください。1以上の整数を入力してください。");
+        return;
+    }
+    if (size > allQuestions.length) {
+        size = allQuestions.length; // 全問題数を超えないように調整
+        alert(`設定された問題数が全問題数(${allQuestions.length}問)を超えています。全問題数で開始します。`);
+        initialQuizSizeInput.value = size; // 入力値を更新
+    }
+    startQuiz(size);
+});
+
+// アプリ起動
+initializeApp();
