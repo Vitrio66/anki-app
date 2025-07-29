@@ -4,36 +4,47 @@ body {
     font-family: sans-serif;
     display: flex;
     justify-content: center;
-    align-items: center;
+    /* align-items: center; を削除またはflex-startに変更 */
+    /* これにより、コンテンツが画面高さを超えた場合にbody自体が縦スクロール可能になる */
+    align-items: flex-start; /* ★調整: コンテンツが上から表示されるように */
     min-height: 100vh;
     background-color: #f4f4f4;
     margin: 0;
-    padding: 5px; /* ★調整: モバイルでのbodyのpaddingを少し減らす */
+    padding: 10px; /* ★調整: bodyのpaddingを少し戻す */
     box-sizing: border-box;
+    /* アプリ全体にスクロールバーを許容するため、bodyのoverflowはデフォルトでOK */
+    /* overflow-y: auto; などは明示的に指定しない */
 }
 
 .container {
     background-color: #fff;
-    /* ★調整: モバイルでのpaddingを少し減らす */
-    padding: 4vw; /* 例: 5vwから4vwへ */
+    padding: 20px; /* ★調整: paddingを少し戻す */
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 95%;
     max-width: 550px;
-    margin: auto;
-    /* ★調整: モバイルでの最小高さを調整し、コンテンツが少ない場合でも安定させる */
-    min-height: 480px; /* 必要であればさらに調整 */
+    margin: 20px auto; /* ★調整: 上下のマージンを追加し、中央に配置 */
+    /* min-heightは維持し、コンテンツ量に応じて高さを伸ばす */
+    min-height: 480px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-/* ★追加: 小さい画面でのcontainerのmin-heightの微調整 */
-@media (max-width: 480px) { /* 典型的なスマホの幅 */
+/* 小さい画面でのcontainerの調整 */
+@media (max-width: 480px) {
     .container {
-        padding: 15px; /* pxで固定して、vwの変動を抑える */
-        min-height: 400px; /* スマホでの最小高さをさらに調整 */
+        padding: 15px; /* ★調整: スマホでのpaddingを少し戻す */
+        min-height: 400px; /* ★調整: スマホでの最小高さを少し戻す */
+        margin: 10px auto; /* ★調整: スマホでの上下マージン */
+    }
+}
+/* PCでのcontainer (既存) */
+@media (min-width: 768px) {
+    .container {
+        padding: 20px;
+        min-height: 520px;
     }
 }
 
@@ -41,16 +52,16 @@ body {
 /* h1 (タイトル) の調整 */
 h1 {
     color: #333;
-    margin-bottom: 2.5vw; /* ★調整: モバイルでのマージンを少し減らす */
-    font-size: 5.5vw; /* ★調整: モバイルでのフォントサイズを少し小さく */
+    margin-bottom: 15px; /* ★調整: マージンを少し戻す */
+    font-size: 5.5vw; /* ★調整: フォントサイズを少し戻す */
     line-height: 1.2;
 }
 
-/* 小さい画面でのh1の最小サイズ */
-@media (max-width: 400px) { /* ★max-widthに変更: 400px以下の画面に適用 */
+/* 小さい画面でのh1の固定サイズ */
+@media (max-width: 400px) {
     h1 {
-        font-size: 22px; /* ★調整: 24pxから22pxへ */
-        margin-bottom: 10px; /* ★追加: モバイルでの固定マージン */
+        font-size: 22px; /* ★調整: フォントサイズを少し戻す */
+        margin-bottom: 10px; /* ★調整: マージンを少し戻す */
     }
 }
 /* PCでのh1の固定サイズ (既存) */
@@ -64,47 +75,41 @@ h1 {
 
 /* 問題文 (#question-text) の調整 */
 #question-text {
-    /* ★調整: モバイルでのフォントサイズを少し小さく */
-    font-size: 4vw; /* 例: 4.5vwから4vwへ */
-    margin-bottom: 3vw; /* ★調整: モバイルでのマージンを少し減らす */
+    /* max-heightとoverflow-y: autoは削除したまま */
+    font-size: 4.5vw; /* ★調整: フォントサイズを読みやすく */
+    margin-bottom: 15px; /* ★調整: マージンを少し戻す */
     color: #555;
     text-align: left;
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.5;
-    /* ★重要: モバイルでのmax-heightを追加・調整。これで見切れないようにする */
-    max-height: 120px; /* モバイルでの最大高さを制限（適宜調整） */
-    overflow-y: auto; /* 高さを超えたらスクロールバーを表示 */
-    padding-right: 5px; /* スクロールバーとの見た目の調整 */
-    /* ★追加: Webkit系ブラウザ（Chrome/Safari）でスクロールバーを細くする */
-    -webkit-overflow-scrolling: touch; /* iOSでスムーズなスクロール */
+    line-height: 1.5; /* 行の高さを読みやすく */
+    padding-right: 0;
+    -webkit-overflow-scrolling: auto;
 }
 
-/* ★追加: 小さい画面での#question-textのmin-heightとmax-heightの微調整 */
+/* 小さい画面での#question-textの固定サイズ */
 @media (max-width: 480px) {
     #question-text {
-        font-size: 16px; /* 固定サイズにする */
-        margin-bottom: 10px; /* 固定マージン */
-        max-height: 100px; /* スマホでの最大高さをさらに調整 */
+        font-size: 16px; /* ★調整: 固定サイズを読みやすく */
+        margin-bottom: 10px; /* ★調整: マージンを少し戻す */
     }
 }
-/* PCでの#question-textの最大サイズ (既存) */
+/* PCでの#question-text (既存からmax-height削除) */
 @media (min-width: 768px) {
     #question-text {
-        font-size: 1.1em;
-        margin-bottom: 15px;
-        max-height: 100px;
+        font-size: 1.1em; /* ★調整: PCでも読みやすく */
+        margin-bottom: 15px; /* ★調整: PCでも読みやすく */
     }
 }
 
 
 /* フォーム用スタイル (モバイルでの調整) */
 .form-group label {
-    font-size: 3.2vw; /* ★調整 */
+    font-size: 3.5vw; /* ★調整 */
 }
 @media (max-width: 480px) {
     .form-group label {
-        font-size: 0.9em;
+        font-size: 0.9em; /* ★調整 */
     }
 }
 /* PCでのlabel (既存) */
@@ -118,15 +123,15 @@ h1 {
 .form-group input[type="text"],
 .form-group textarea,
 .form-group select {
-    font-size: 3.2vw; /* ★調整 */
+    font-size: 3.5vw; /* ★調整 */
     padding: 2.5vw; /* ★調整 */
 }
 @media (max-width: 480px) {
     .form-group input[type="text"],
     .form-group textarea,
     .form-group select {
-        padding: 8px; /* 固定サイズ */
-        font-size: 0.9em;
+        padding: 8px; /* ★調整 */
+        font-size: 0.9em; /* ★調整 */
     }
 }
 /* PCでのinput/textarea/select (既存) */
@@ -140,9 +145,9 @@ h1 {
 }
 
 .form-group textarea {
-    min-height: 50px; /* ★調整: モバイルでの最小高さをさらに小さく */
-    max-height: 100px; /* ★追加: モバイルでの最大高さを設定 */
-    overflow-y: auto; /* ★追加: textarea内でスクロール可能に */
+    min-height: 50px; /* ★調整: textareaの最小高さを少し戻す */
+    max-height: 100px; /* ★維持: 問題追加フォームのテキストエリアは長い記述がありうるため */
+    overflow-y: auto; /* ★維持: textarea内でスクロール可能に */
 }
 /* PCでのtextarea (既存) */
 @media (min-width: 768px) {
@@ -154,8 +159,8 @@ h1 {
 
 /* 4択問題用のCSS (モバイルでの調整) */
 .options-grid {
-    gap: 1.2vw; /* ★調整: モバイルでのギャップを少し減らす */
-    margin-top: 2.5vw; /* ★調整: モバイルでのマージンを少し減らす */
+    gap: 1.5vw; /* ★調整: ギャップを少し戻す */
+    margin-top: 2.5vw; /* ★調整: マージンを少し戻す */
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -164,47 +169,42 @@ h1 {
 
 
 .option-button {
-    padding: 2.2vw 2.5vw; /* ★調整: モバイルでのpaddingをさらに小さく */
-    font-size: 3.2vw; /* ★調整: モバイルでのフォントサイズをさらに小さく */
-    line-height: 1.4;
-    /* ★重要: モバイルでのmax-heightを追加・調整。選択肢が長くても見切れないようにする */
-    max-height: 60px; /* モバイルでの最大高さを制限（適宜調整） */
-    overflow-y: auto; /* 高さを超えたらスクロールバーを表示 */
-    padding-right: 5px; /* スクロールバーとの見た目の調整 */
-    /* ★追加: Webkit系ブラウザ（Chrome/Safari）でスクロールバーを細くする */
-    -webkit-overflow-scrolling: touch;
+    /* max-heightとoverflow-y: autoは削除したまま */
+    padding: 2.5vw 2.5vw; /* ★調整: paddingを少し戻す */
+    font-size: 3.5vw; /* ★調整: フォントサイズを少し戻す */
+    line-height: 1.4; /* 行の高さを少し戻す */
+    padding-right: 0;
+    -webkit-overflow-scrolling: auto;
 }
 
-/* ★追加: 小さい画面でのoption-buttonの固定サイズ */
+/* 小さい画面でのoption-buttonの固定サイズ */
 @media (max-width: 480px) {
     .option-button {
-        padding: 8px 10px; /* 固定サイズ */
-        font-size: 0.9em; /* 固定サイズ */
-        max-height: 50px; /* スマホでの最大高さをさらに調整 */
+        padding: 8px 10px; /* ★調整: 固定paddingを少し戻す */
+        font-size: 0.9em; /* ★調整: 固定フォントサイズを少し戻す */
     }
 }
-/* PCでのoption-buttonの最大サイズ (既存) */
+/* PCでのoption-button (既存からmax-height削除) */
 @media (min-width: 768px) {
     .option-button {
         padding: 10px 12px;
         font-size: 0.95em;
-        max-height: 60px;
     }
 }
 
 
 /* アクションボタン（解答する、次へ、スキップ、問題を追加）の統一スタイル (モバイルでの調整) */
 .action-button, .action-button-toggle {
-    padding: 2vw 4vw; /* ★調整: モバイルでのpaddingを減らす */
-    font-size: 3.5vw; /* ★調整: モバイルでのフォントサイズを減らす */
-    margin-top: 2.5vw; /* ★調整: モバイルでのマージンを減らす */
+    padding: 2vw 4vw; /* ★調整: paddingを少し戻す */
+    font-size: 3.8vw; /* ★調整: フォントサイズを少し戻す */
+    margin-top: 2.5vw; /* ★調整: マージンを少し戻す */
 }
-/* ★追加: 小さい画面でのアクションボタンの固定サイズ */
+/* 小さい画面でのアクションボタンの固定サイズ */
 @media (max-width: 480px) {
     .action-button, .action-button-toggle {
-        padding: 10px 15px; /* 固定サイズ */
-        font-size: 1em; /* 固定サイズ */
-        margin-top: 12px; /* 固定マージン */
+        padding: 10px 15px; /* ★調整 */
+        font-size: 1em; /* ★調整 */
+        margin-top: 12px; /* ★調整 */
     }
 }
 /* PCでのアクションボタンの最大サイズ (既存) */
@@ -222,12 +222,12 @@ h1 {
     font-size: 2.5vw; /* ★調整 */
     margin-top: 1vw; /* ★調整 */
 }
-/* ★追加: 小さい画面でのスキップボタンの固定サイズ */
+/* 小さい画面でのスキップボタンの固定サイズ */
 @media (max-width: 480px) {
     .action-button-link {
-        padding: 4px 8px; /* 固定サイズ */
-        font-size: 0.8em; /* 固定サイズ */
-        margin-top: 8px; /* 固定マージン */
+        padding: 4px 8px; /* ★調整 */
+        font-size: 0.8em; /* ★調整 */
+        margin-top: 8px; /* ★調整 */
     }
 }
 /* PCでのスキップボタンの最大サイズ (既存) */
@@ -249,11 +249,11 @@ h1 {
     font-size: 3.5vw; /* ★調整 */
     margin-bottom: 1.2vw; /* ★調整 */
 }
-/* ★追加: 小さい画面でのfeedback-textの固定サイズ */
+/* 小さい画面でのfeedback-textの固定サイズ */
 @media (max-width: 480px) {
     #feedback-text {
-        font-size: 1em;
-        margin-bottom: 8px;
+        font-size: 1em; /* ★調整 */
+        margin-bottom: 8px; /* ★調整 */
     }
 }
 /* PCでのfeedback-textの最大サイズ (既存) */
@@ -265,23 +265,22 @@ h1 {
 }
 
 #explanation-text {
-    font-size: 3vw; /* ★調整 */
+    font-size: 3vw; /* ★調整: ここは少し小さめを維持 */
     white-space: pre-wrap;
     text-align: left;
     word-wrap: break-word;
     line-height: 1.5;
-    /* ★重要: モバイルでのmax-heightを追加・調整。これで見切れないようにする */
+    /* ★維持: max-heightとoverflow-y: autoを維持（解説文が非常に長くなる可能性のため） */
     max-height: 100px; /* モバイルでの最大高さを制限（適宜調整） */
     overflow-y: auto; /* 高さを超えたらスクロールバーを表示 */
     padding-right: 5px; /* スクロールバーとの見た目の調整 */
-    /* ★追加: Webkit系ブラウザ（Chrome/Safari）でスクロールバーを細くする */
     -webkit-overflow-scrolling: touch;
 }
-/* ★追加: 小さい画面でのexplanation-textの固定サイズ */
+/* 小さい画面でのexplanation-textの固定サイズ */
 @media (max-width: 480px) {
     #explanation-text {
-        font-size: 0.9em;
-        max-height: 80px; /* スマホでの最大高さをさらに調整 */
+        font-size: 0.9em; /* ★調整 */
+        max-height: 80px; /* ★調整: スマホでの最大高さを少し戻す */
     }
 }
 /* PCでのexplanation-textの最大サイズ (既存) */
@@ -298,16 +297,15 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-bottom: 10px;
-    overflow-y: auto;
-    /* ★調整: モバイルでの最大高さを設定 */
-    max-height: calc(100vh - 80px); /* ビューポート高からヘッダーやフッター、ボタン類を引いた高さ */
+    padding-bottom: 10px; /* ★調整: paddingを少し戻す */
+    overflow-y: auto; /* ★維持: ここはスクロールバーを維持 */
+    max-height: calc(100vh - 80px); /* ★調整: ビューポート高からボタン類を引いた高さ */
 }
-/* ★追加: 小さい画面での問題追加フォームの固定サイズ */
+/* 小さい画面での問題追加フォームの固定サイズ */
 @media (max-width: 480px) {
     #add-question-form-section {
-        max-height: 350px; /* スマホでの最大高さをさらに調整 */
-        padding-top: 10px;
+        max-height: 350px; /* ★調整: スマホでの最大高さを少し戻す */
+        padding-top: 10px; /* ★調整: paddingを少し戻す */
     }
 }
 /* PCでの問題追加フォームの最大高さを固定 (既存) */
@@ -318,26 +316,19 @@ h1 {
     }
 }
 
-/* ★スクロールバーのカスタマイズ（Chrome/Edge/Safari） */
-/* スクロールバー全体の幅 */
+/* スクロールバーのカスタマイズは維持（textareaと解説文用） */
 ::-webkit-scrollbar {
-    width: 6px; /* 縦スクロールバーの幅 */
-    height: 6px; /* 横スクロールバーの高さ */
+    width: 6px;
+    height: 6px;
 }
-
-/* スクロールバーの背景 */
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
-
-/* スクロールバーのつまみ（ドラッグする部分） */
 ::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 10px;
 }
-
-/* スクロールバーのつまみをホバーした時 */
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
