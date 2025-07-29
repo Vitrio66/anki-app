@@ -266,7 +266,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%;
+    width: 100%; /* ★追加: 親要素の幅いっぱいに広がるように */
 }
 
 
@@ -437,11 +437,20 @@ body {
     margin-bottom: 10px;
     font-weight: bold;
     color: #28a745;
+    display: inline-block; /* 正解番号と横並びにするため */
+    margin-right: 10px; /* 正解番号との間隔 */
 }
 #feedback-text.incorrect {
     color: #dc3545;
 }
 
+#correct-option-number { /* ★追加: 正解の選択肢番号表示用 */
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #007bff; /* 目立つ色 */
+    display: inline-block;
+    vertical-align: middle; /* feedback-textと高さを合わせる */
+}
 
 #explanation-text {
     font-size: 1em;
@@ -463,6 +472,9 @@ body {
     #explanation-text {
         font-size: 0.95em;
     }
+    #correct-option-number {
+        font-size: 1em;
+    }
 }
 /* PCでのfeedback-textとexplanation-text */
 @media (min-width: 768px) {
@@ -472,6 +484,9 @@ body {
     }
     #explanation-text {
         font-size: 1.05em;
+    }
+    #correct-option-number {
+        font-size: 1.1em;
     }
 }
 
