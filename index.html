@@ -7,9 +7,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="quiz-size-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>出題数を設定</h2>
+            <p>初回に出題する問題数を入力してください。</p>
+            <input type="number" id="initial-quiz-size-input" value="10" min="1" step="1">
+            <button id="start-quiz-button" class="action-button">クイズを開始</button>
+        </div>
+    </div>
+
     <div id="round-indicator"></div>
 
-    <div id="quiz-section" class="main-content">
+    <div id="quiz-section" class="main-content" style="display: none;">
         <p id="question-text"></p>
 
         <div id="options-container" class="options-grid">

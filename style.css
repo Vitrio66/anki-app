@@ -16,6 +16,74 @@ body {
     width: 100%;
 }
 
+/* 問題数設定モーダルのスタイル */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-sizing: border-box;
+    display: flex; /* flexを追加 */
+    flex-direction: column; /* 縦並び */
+    gap: 20px; /* 要素間の隙間 */
+}
+
+.modal-content h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+#initial-quiz-size-input {
+    width: 80%;
+    padding: 12px;
+    font-size: 1.2em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    margin: 0 auto 20px auto; /* 中央寄せと下のマージン */
+    display: block; /* 独立したブロック要素に */
+}
+
+#start-quiz-button {
+    padding: 12px 25px;
+    font-size: 1.1em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto; /* 幅を自動調整 */
+    margin: 0 auto; /* ボタンも中央寄せ */
+}
+
+#start-quiz-button:hover {
+    background-color: #0056b3;
+}
+
 /* 周回表示のスタイル */
 #round-indicator {
     font-size: 0.9em;
@@ -31,6 +99,20 @@ body {
         font-size: 0.8em;
         margin-top: 8px;
         margin-bottom: -8px;
+    }
+    .modal-content h2 {
+        font-size: 1.5em;
+    }
+    .modal-content p {
+        font-size: 1em;
+    }
+    #initial-quiz-size-input {
+        font-size: 1em;
+        padding: 10px;
+    }
+    #start-quiz-button {
+        font-size: 1em;
+        padding: 10px 20px;
     }
 }
 @media (min-width: 768px) {

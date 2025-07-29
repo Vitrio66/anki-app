@@ -9,14 +9,19 @@ const GITHUB_QUESTIONS_JSON_PATH = 'questions.json'; // GitHub Pages上のJSON�
 let allQuestions = []; // 全ての問題を保持するリスト
 let currentQuizSet = []; // 現在出題中の問題セット (初回 or 不正解問題)
 let mistakenQuestions = []; // 間違えた問題を保持するリスト (再出題用)
+let answeredQuestionsInCurrentRound = []; // 現在の周回で回答済みの問題IDを保持 (スキップも含む)
 let currentQuestionIndex = 0;
 let currentQuestion;
 let selectedOptionText = null;
-let round = 1; // 現在の周回数 (1周目, 2周目など)
-const INITIAL_QUIZ_SIZE = 10; // ★ここに出題したい最初の問題数を設定してください
+let round = 0; // 現在の周回数 (0: 未開始, 1: 1周目, 2: 2周目など)
+let initialQuizSize = 0; // ユーザーが設定する初回出題数
 
 // --- UI要素の取得 ---
-const roundIndicator = document.getElementById('round-indicator'); // ★追加: 周回表示要素
+const quizSizeModal = document.getElementById('quiz-size-modal'); // ★追加: モーダル
+const initialQuizSizeInput = document.getElementById('initial-quiz-size-input'); // ★追加: モーダル内の入力フィールド
+const startQuizButton = document.getElementById('start-quiz-button'); // ★追加: モーダル内の開始ボタン
+
+const roundIndicator = document.getElementById('round-indicator');
 const quizSection = document.getElementById('quiz-section');
 const questionText = document.getElementById('question-text');
 const optionsContainer = document.getElementById('options-container');
@@ -113,7 +118,7 @@ function saveAllQuestionsToLocalStorage() {
  * 2. ローカルストレージにデータがなければ、GitHub Pages上のJSONファイルを読み込む。
  * 3. GitHub Pagesから読み込んだデータをローカルストレージに保存する（初回アクセス時など）。
  */
-async function loadAndInitializeQuestions() {
+async function loadAllQuestions() {
     const storedQuestions = localStorage.getItem(LOCAL_STORAGE_ALL_QUESTIONS_KEY);
 
     if (storedQuestions) {
@@ -129,6 +134,7 @@ async function loadAndInitializeQuestions() {
     }
 
     if (allQuestions.length === 0) {
+        // 問題がない場合のUI表示調整
         questionText.textContent = "現在、問題がありません。GitHub Pagesのquestions.jsonファイルを確認するか、新しい問題を追加してください。";
         optionsContainer.innerHTML = '';
         submitAnswerButton.style.display = 'none';
@@ -136,11 +142,13 @@ async function loadAndInitializeQuestions() {
         skipButton.style.display = 'none';
         resultArea.style.display = 'none';
         quizButtonsContainer.style.display = 'none';
+        roundIndicator.style.display = 'none';
+        
+        quizSection.style.display = 'flex'; // 問題なしメッセージを表示するために表示
         showAddQuestionFormButton.style.display = 'inline-block';
-        roundIndicator.style.display = 'none'; // ★追加: 問題がなければ周回表示も非表示
-        return false;
+        return false; // 問題がないことを示す
     }
-    return true;
+    return true; // 問題があることを示す
 }
 
 /**
@@ -159,25 +167,31 @@ async function fetchQuestionsFromGitHub() {
     } catch (error) {
         console.error("GitHub Pagesからの問題読み込みに失敗しました:", error);
         alert(`問題の読み込みに失敗しました。\n原因: ${error.message}\nJSONファイルが正しく設定されているか、GitHub PagesのURLが正しいか確認してください。`);
-        allQuestions = [];
+        allQuestions = []; // 問題が読み込めなかった場合は空にする
     }
 }
 
 /**
  * クイズを初期化し、出題する問題セットを準備する
  */
-function startQuiz() {
-    mistakenQuestions = loadMistakenQuestions(); // 間違えた問題リストをロード
-    round = 1;
-    updateRoundIndicator(); // 周回表示を更新
+function startQuiz(quizSize) {
+    initialQuizSize = quizSize; // ユーザーが設定した初回出題数を保存
+    round = 1; // 1周目から開始
+    mistakenQuestions = []; // 新しいクイズ開始時は間違えた問題リストをリセット
+    saveMistakenQuestions(); // ローカルストレージもクリア
+
     resetQuizSet(); // 問題セットをリセットして初回出題準備
 
     // 問題がまだない場合はここで終了
-    if (allQuestions.length === 0) {
-        displayQuestion(); // 「問題がありません」のメッセージを表示
+    if (currentQuizSet.length === 0) {
+        endQuiz(allQuestions.length === 0 ? "問題がありません。" : "全ての学習が終了しました！よく頑張りました！");
         return;
     }
 
+    quizSizeModal.style.display = 'none'; // モーダルを隠す
+    quizSection.style.display = 'flex'; // クイズセクションを表示
+    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンを隠す
+    
     displayQuestion();
 }
 
@@ -185,48 +199,55 @@ function startQuiz() {
  * 現在の周回と出題する問題セットを管理する
  */
 function resetQuizSet() {
+    answeredQuestionsInCurrentRound = []; // 現在の周回で回答済みの問題IDをリセット
+
     if (round === 1) {
-        // 1周目: 全体の問題からランダムにINITIAL_QUIZ_SIZEだけ出題
-        const shuffledAllQuestions = shuffleArray([...allQuestions]);
-        currentQuizSet = shuffledAllQuestions.slice(0, INITIAL_QUIZ_SIZE);
-        // 出題数が全問題数より多い場合は全問題を出題
-        if (INITIAL_QUIZ_SIZE > allQuestions.length) {
-            currentQuizSet = shuffledAllQuestions;
+        // 1周目: 全体の問題からランダムにinitialQuizSizeだけ出題
+        const availableQuestions = allQuestions.filter(q => !mistakenQuestions.some(mq => mq.id === q.id));
+        const shuffledQuestions = shuffleArray([...availableQuestions]);
+        currentQuizSet = shuffledQuestions.slice(0, initialQuizSize);
+
+        // 出題数が全問題数より多い場合は、利用可能な全問題を出題
+        if (initialQuizSize > availableQuestions.length) {
+            currentQuizSet = shuffledQuestions;
         }
-        mistakenQuestions = []; // 1周目開始時は間違えた問題リストをリセット
-        saveMistakenQuestions();
         console.log("1周目開始。出題問題数:", currentQuizSet.length);
     } else {
         // 2周目以降: 間違えた問題のみをランダムに再出題
         if (mistakenQuestions.length === 0) {
-            endQuiz(); // 間違えた問題がなければクイズ終了
+            endQuiz("全ての学習が終了しました！よく頑張りました！"); // 間違えた問題がなければクイズ終了
             return;
         }
         currentQuizSet = shuffleArray([...mistakenQuestions]);
         mistakenQuestions = []; // 次の周回のために間違えた問題リストをリセット
-        saveMistakenQuestions();
+        saveMistakenQuestions(); // ローカルストレージも更新
         console.log(`${round}周目開始。間違えた問題数:`, currentQuizSet.length);
     }
     currentQuestionIndex = 0; // 問題インデックスをリセット
+    updateRoundIndicator(); // 周回表示を更新
 }
 
 /**
  * 周回表示を更新する
  */
 function updateRoundIndicator() {
-    if (round > 1) {
-        roundIndicator.textContent = `${round}周目`;
-        roundIndicator.style.display = 'block';
+    if (round > 0) { // roundが0でない（クイズ開始後）
+        if (currentQuizSet.length > 0) { // 問題が残っている場合のみ表示
+            roundIndicator.textContent = `${round}周目`;
+            roundIndicator.style.display = 'block';
+        } else {
+            roundIndicator.style.display = 'none'; // 問題がなければ非表示
+        }
     } else {
-        roundIndicator.style.display = 'none';
+        roundIndicator.style.display = 'none'; // クイズ開始前は非表示
     }
 }
 
 /**
  * クイズを終了する
  */
-function endQuiz() {
-    questionText.textContent = "全ての学習が終了しました！よく頑張りました！";
+function endQuiz(message) {
+    questionText.textContent = message;
     optionsContainer.innerHTML = '';
     optionsContainer.style.display = 'none';
     submitAnswerButton.style.display = 'none';
@@ -234,10 +255,14 @@ function endQuiz() {
     nextButton.style.display = 'none';
     resultArea.style.display = 'none';
     quizButtonsContainer.style.display = 'none';
+    roundIndicator.style.display = 'none';
     showAddQuestionFormButton.style.display = 'inline-block';
-    roundIndicator.style.display = 'none'; // ★追加: クイズ終了時は周回表示を非表示
-    alert("お疲れ様でした！全ての学習問題が終了しました。");
+    
+    alert(message);
     window.scrollTo(0, 0);
+    // クイズ終了後、再度問題数設定モーダルを表示するかどうかは要件による
+    // 今回は問題追加ボタンを表示し、完全に終了としています。
+    // もし再挑戦させたい場合は showQuizSizeModal(); を呼ぶ
 }
 
 
@@ -245,18 +270,7 @@ function endQuiz() {
 function displayQuestion() {
     if (currentQuizSet.length === 0) {
         // currentQuizSetが空の場合（問題が初回で全くない場合や、不正解問題が全て終わった場合）
-        if (allQuestions.length === 0) {
-            questionText.textContent = "現在、問題がありません。新しい問題を追加してください。";
-        } else {
-            endQuiz(); // 間違えた問題が全て解決した場合の終了処理
-        }
-        optionsContainer.innerHTML = '';
-        submitAnswerButton.style.display = 'none';
-        nextButton.style.display = 'none';
-        skipButton.style.display = 'none';
-        resultArea.style.display = 'none';
-        quizButtonsContainer.style.display = 'none';
-        showAddQuestionFormButton.style.display = 'inline-block';
+        endQuiz(allQuestions.length === 0 ? "現在、問題がありません。" : "全ての学習が終了しました！よく頑張りました！");
         return;
     }
 
@@ -309,7 +323,7 @@ function checkAnswer() {
     const userAnswer = selectedOptionText;
     const correctAnswer = currentQuestion.correctAnswer;
 
-    disableOptions();
+    disableOptions(); // 選択肢を無効化
 
     const optionButtons = document.querySelectorAll('.option-button');
     optionButtons.forEach(button => {
@@ -335,6 +349,8 @@ function checkAnswer() {
     submitAnswerButton.style.display = 'none';
     skipButton.style.display = 'none';
     nextButton.style.display = 'inline-block';
+
+    answeredQuestionsInCurrentRound.push(currentQuestion.id); // 現在の周回で回答済みとして記録
 }
 
 // 「回答をスキップする」機能
@@ -360,6 +376,8 @@ skipButton.addEventListener('click', () => {
     submitAnswerButton.style.display = 'none';
     skipButton.style.display = 'none';
     nextButton.style.display = 'inline-block';
+
+    answeredQuestionsInCurrentRound.push(currentQuestion.id); // 現在の周回で回答済みとして記録
 });
 
 // 「次の問題へ」ボタン
@@ -371,25 +389,30 @@ nextButton.addEventListener('click', () => {
         window.scrollTo(0, 0);
     } else {
         // 現在の問題セットを全て回答し終えた場合
-        round++; // 次の周回へ
-        resetQuizSet(); // 新しい問題セットを準備（間違えた問題があればそれを出題）
-        if (currentQuizSet.length > 0) {
-            // 新しい問題セットがある場合のみ表示
-            displayQuestion();
-            window.scrollTo(0, 0);
+        // 全問回答済みで、かつ不正解問題がまだある場合のみ次の周回へ
+        if (mistakenQuestions.length > 0) {
+            round++; // 次の周回へ
+            resetQuizSet(); // 新しい問題セットを準備（間違えた問題があればそれを出題）
+            if (currentQuizSet.length > 0) {
+                displayQuestion();
+                window.scrollTo(0, 0);
+            } else {
+                // ここには到達しないはずだが念のため
+                endQuiz("全ての学習が終了しました！よく頑張りました！");
+            }
         } else {
             // 全ての問題（初回、間違えた問題も含む）が終了した場合
-            endQuiz();
+            endQuiz("全ての学習が終了しました！よく頑張りました！");
         }
     }
 });
 
 // 「問題を追加」ボタン（表示）
 showAddQuestionFormButton.addEventListener('click', () => {
-    addQuestionFormSection.style.display = 'flex'; // flexに変更
+    addQuestionFormSection.style.display = 'flex';
     quizSection.style.display = 'none';
     showAddQuestionFormButton.style.display = 'none';
-    roundIndicator.style.display = 'none'; // ★追加: フォーム表示中は周回表示を非表示
+    roundIndicator.style.display = 'none'; // フォーム表示中は周回表示を非表示
 
     // フォームの入力欄をクリア
     newQuestionText.value = '';
@@ -404,21 +427,19 @@ showAddQuestionFormButton.addEventListener('click', () => {
 // 「キャンセル」ボタン（問題追加フォームを隠す）
 hideAddQuestionFormButton.addEventListener('click', () => {
     addQuestionFormSection.style.display = 'none';
-    quizSection.style.display = 'flex'; // flexに変更
-    showAddQuestionFormButton.style.display = 'inline-block';
-    
-    // 現在の問題から再開（またはクイズを再開）
-    if (currentQuizSet.length > 0) {
-        displayQuestion();
-    } else {
-        // 問題がない状態でキャンセルされた場合は、クイズを再初期化
-        initializeApp();
+    // 問題追加フォームを閉じた後、クイズを再開するか、問題数設定モーダルを表示するかを判断
+    if (round > 0 && currentQuizSet.length > 0) { // クイズが進行中で問題が残っている場合
+        quizSection.style.display = 'flex';
+        showAddQuestionFormButton.style.display = 'inline-block'; // クイズ継続中は問題追加ボタンを再び表示
+        displayQuestion(); // 現在の問題を表示し直す
+    } else { // クイズがまだ始まっていないか、完全に終了している場合
+        initializeApp(); // アプリを再初期化して問題数モーダルから開始
     }
     window.scrollTo(0, 0);
 });
 
 // 「問題を追加する」ボタン（問題追加フォームから）
-addQuestionButton.addEventListener('click', () => {
+addQuestionButton.addEventListener('click', async () => { // asyncを追加
     const question = newQuestionText.value.trim();
     const correctAnswer = newCorrectAnswer.value.trim();
     const explanation = newExplanation.value.trim();
@@ -456,23 +477,55 @@ addQuestionButton.addEventListener('click', () => {
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
 
-    // 問題を追加したら、クイズ画面に戻る
+    // 問題を追加したら、問題数設定モーダルに戻る
     addQuestionFormSection.style.display = 'none';
-    quizSection.style.display = 'flex'; // flexに変更
-    showAddQuestionFormButton.style.display = 'inline-block';
-    
-    // クイズを再開
-    startQuiz(); // 問題が追加されたので、クイズを最初からやり直す
+    await initializeApp(); // 問題を追加したので、アプリを再初期化して問題数モーダルを表示
     window.scrollTo(0, 0);
 });
 
 // --- アプリ初期化 ---
 async function initializeApp() {
-    const hasQuestions = await loadAndInitializeQuestions();
+    quizSection.style.display = 'none'; // クイズセクションを非表示
+    addQuestionFormSection.style.display = 'none'; // 問題追加フォームを非表示
+    showAddQuestionFormButton.style.display = 'none'; // 問題追加ボタンも最初は非表示
+
+    const hasQuestions = await loadAllQuestions(); // 全問題の読み込み
     if (hasQuestions) {
-        startQuiz(); // 問題があればクイズ開始
+        showQuizSizeModal(); // 問題があれば問題数設定モーダルを表示
+    } else {
+        // 問題が読み込めなかった場合、問題追加ボタンだけ表示してユーザーに入力を促す
+        showAddQuestionFormButton.style.display = 'inline-block';
+        quizSizeModal.style.display = 'none';
     }
+    roundIndicator.style.display = 'none'; // 初期状態では周回表示を非表示
     window.scrollTo(0, 0);
 }
 
-initializeApp(); // アプリを初期化する
+// 問題数設定モーダルを表示する関数
+function showQuizSizeModal() {
+    quizSizeModal.style.display = 'flex';
+    // 問題数がallQuestions.lengthより多い場合は、allQuestions.lengthを上限とする
+    initialQuizSizeInput.max = allQuestions.length;
+    // デフォルト値を全問題数か10の少ない方に設定
+    initialQuizSizeInput.value = Math.min(10, allQuestions.length);
+    // 問題追加ボタンを再度表示 (モーダルの上に出るように)
+    showAddQuestionFormButton.style.display = 'inline-block';
+}
+
+// モーダルからクイズ開始ボタンのイベントリスナー
+startQuizButton.addEventListener('click', () => {
+    let size = parseInt(initialQuizSizeInput.value, 10);
+    if (isNaN(size) || size <= 0) {
+        alert("有効な問題数を入力してください。1以上の整数を入力してください。");
+        return;
+    }
+    if (size > allQuestions.length) {
+        size = allQuestions.length; // 全問題数を超えないように調整
+        alert(`設定された問題数が全問題数(${allQuestions.length}問)を超えています。全問題数で開始します。`);
+        initialQuizSizeInput.value = size; // 入力値を更新
+    }
+    startQuiz(size);
+});
+
+// アプリ起動
+initializeApp();
