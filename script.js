@@ -292,6 +292,9 @@ function displayQuestion() {
     quizButtonsContainer.style.display = 'flex';
     showAddQuestionFormButton.style.display = 'none'; // クイズ中は問題追加ボタンを隠す
 
+    // ★修正点1: 「解答する」ボタンを初期状態で無効にする
+    submitAnswerButton.disabled = true; 
+
     const shuffledOptions = shuffleArray([...currentQuestion.options]);
 
     shuffledOptions.forEach((option, index) => {
@@ -304,12 +307,12 @@ function displayQuestion() {
             clearOptionSelection();
             button.classList.add('selected');
             selectedOptionText = option;
-            submitAnswerButton.disabled = false;
+            // ★修正点2: 選択肢が選ばれたら「解答する」ボタンを有効にする
+            submitAnswerButton.disabled = false; 
         });
         optionsContainer.appendChild(button);
     });
 
-    submitAnswerButton.disabled = true;
     updateRoundIndicator(); // 周回表示を更新
 }
 
@@ -352,6 +355,11 @@ function checkAnswer() {
 
     answeredQuestionsInCurrentRound.push(currentQuestion.id); // 現在の周回で回答済みとして記録
 }
+
+// 「解答する」ボタンのイベントリスナー
+// ★確認・修正点3: このイベントリスナーが適切に設定されているかを確認
+submitAnswerButton.addEventListener('click', checkAnswer); 
+
 
 // 「回答をスキップする」機能
 skipButton.addEventListener('click', () => {
