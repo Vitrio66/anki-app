@@ -131,9 +131,9 @@ body {
 
 /* メインコンテンツのラッパー */
 .main-content {
-    width: 100%;
-    max-width: 600px;
-    padding: 20px 10px;
+    width: 100%; /* ★変更: 常に100%に */
+    max-width: 600px; /* ★変更: 最大幅は維持しつつ */
+    padding: 20px 10px; /* ★変更: 左右のパディングを調整 */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -145,8 +145,8 @@ body {
 /* 小さい画面でのmain-contentの調整 */
 @media (max-width: 480px) {
     .main-content {
-        padding: 15px 5px;
-        max-width: none;
+        padding: 15px 5px; /* ★変更: さらに狭い画面でのパディング */
+        max-width: none; /* ★変更: 最大幅を解除して画面いっぱいに広がるように */
     }
 }
 
@@ -266,7 +266,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%; /* ★追加: 親要素の幅いっぱいに広がるように */
+    width: 100%; /* ★変更なし: 親要素の幅いっぱいに広がるように */
 }
 
 
@@ -280,7 +280,7 @@ body {
     color: #333;
     cursor: pointer;
     text-align: left;
-    width: 100%;
+    width: 100%; /* ★変更なし: 幅100%を維持 */
     box-sizing: border-box;
     transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -444,7 +444,7 @@ body {
     color: #dc3545;
 }
 
-#correct-option-number { /* ★追加: 正解の選択肢番号表示用 */
+#correct-option-number { /* 正解の選択肢番号表示用 */
     font-size: 1.1em;
     font-weight: bold;
     color: #007bff; /* 目立つ色 */

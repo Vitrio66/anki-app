@@ -363,14 +363,8 @@ function checkAnswer() {
         }
     });
 
-    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-        feedbackText.textContent = `正解！ (選択肢${correctOptionNumber})`; 
-        feedbackText.className = 'correct'; // 緑色に
-    } else {
-        feedbackText.textContent = `不正解... (正解は選択肢${correctOptionNumber})`; 
-        feedbackText.className = 'incorrect'; // 赤色に
-        addMistakenQuestion(currentQuestion); // 間違えた問題を追加
-    }
+    feedbackText.textContent = `${userAnswer.toLowerCase() === correctAnswer.toLowerCase() ? '正解' : '不正解'}！ (選択肢${correctOptionNumber})`; 
+    feedbackText.className = userAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'correct' : 'incorrect'; // 色を適用
     explanationText.textContent = `正解は「${correctAnswer}」です。\n${currentQuestion.explanation}`;
     resultArea.style.display = 'block';
 
@@ -442,7 +436,7 @@ nextButton.addEventListener('click', () => {
 
 // --- 管理者モード関連の機能 ---
 
-// 管理者モードボタンのイベントリスナー (プロンプト認証)
+// 管理者モードボタンのイベントリスナー (プロンプト認証) ★修正
 enterAdminModeButton.addEventListener('click', () => {
     const password = prompt("管理者パスワードを入力してください:");
     if (password === ADMIN_PASSWORD) {
