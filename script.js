@@ -54,7 +54,7 @@ const hideAddQuestionFormButton = document.getElementById('hide-add-question-for
 
 // 新しく追加される管理者モード・ユーザーモードのボタン
 const showAddQuestionFormButtonUser = document.getElementById('show-add-question-form-button-user');
-const enterAdminModeButton = document.getElementById('enter-admin-mode-button'); // ★復活
+const enterAdminModeButton = document.getElementById('enter-admin-mode-button'); 
 const showAddQuestionFormButtonAdmin = document.getElementById('show-add-question-form-button-admin');
 const exitAdminModeButton = document.getElementById('exit-admin-mode-button');
 
@@ -436,7 +436,7 @@ nextButton.addEventListener('click', () => {
 
 // --- 管理者モード関連の機能 ---
 
-// 管理者モードボタンのイベントリスナー (プロンプト認証) ★修正
+// 管理者モードボタンのイベントリスナー (プロンプト認証) 
 enterAdminModeButton.addEventListener('click', () => {
     const password = prompt("管理者パスワードを入力してください:");
     if (password === ADMIN_PASSWORD) {
@@ -617,7 +617,7 @@ async function initializeApp() {
     } else {
         // 問題が読み込めなかった場合でも、フッターボタンは表示する
         alert("問題データの読み込みに失敗しました。管理者モードから問題を管理するか、問題追加を依頼してください。");
-        appFooterButtons.style.display = 'flex'; 
+        // appFooterButtons.style.display = 'flex'; // この行はshowQuizSizeModal()内に移動
     }
     window.scrollTo(0, 0);
 }
@@ -630,7 +630,7 @@ function showQuizSizeModal() {
     initialQuizSizeInput.max = allQuestions.length;
     // デフォルト値を全問題数か10の少ない方に設定
     initialQuizSizeInput.value = Math.min(10, allQuestions.length);
-    appFooterButtons.style.display = 'flex'; // フッターボタンも表示
+    appFooterButtons.style.display = 'flex'; // ★この行が追加されたことを確認
 }
 
 // モーダルからクイズ開始ボタンのイベントリスナー
