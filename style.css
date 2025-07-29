@@ -1,516 +1,350 @@
 /* style.css */
 
 body {
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    min-height: 100vh;
+    font-family: 'Arial', sans-serif;
     background-color: #f4f4f4;
+    color: #333;
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 上部に寄せる */
+    min-height: 100vh;
     box-sizing: border-box;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
 }
 
-/* 問題数設定モーダルのスタイル */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    max-width: 800px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+h1, h2, h3 {
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+/* モーダル */
+.modal {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: fixed;
     z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
 }
 
 .modal-content {
     background-color: #fff;
+    margin: auto;
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     width: 90%;
     max-width: 400px;
-    box-sizing: border-box;
-    display: flex; /* flexを追加 */
-    flex-direction: column; /* 縦並び */
-    gap: 20px; /* 要素間の隙間 */
-}
-
-.modal-content h2 {
-    font-size: 1.8em;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.modal-content p {
-    font-size: 1.1em;
-    color: #555;
-    margin-bottom: 15px;
+    text-align: center;
 }
 
 #initial-quiz-size-input {
-    width: 80%;
-    padding: 12px;
-    font-size: 1.2em;
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 15px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
-    text-align: center;
-    margin: 0 auto 20px auto; /* 中央寄せと下のマージン */
-    display: block; /* 独立したブロック要素に */
-}
-
-#start-quiz-button {
-    padding: 12px 25px;
     font-size: 1.1em;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    width: auto; /* 幅を自動調整 */
-    margin: 0 auto; /* ボタンも中央寄せ */
 }
 
-#start-quiz-button:hover {
-    background-color: #0056b3;
-}
-
-/* 周回表示のスタイル */
-#round-indicator {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 10px;
-    margin-bottom: -10px; /* main-contentとの間隔を詰める */
-    text-align: center;
-    width: 100%;
-    display: none; /* 初期状態では非表示 */
-}
-@media (max-width: 480px) {
-    #round-indicator {
-        font-size: 0.8em;
-        margin-top: 8px;
-        margin-bottom: -8px;
-    }
-    .modal-content h2 {
-        font-size: 1.5em;
-    }
-    .modal-content p {
-        font-size: 1em;
-    }
-    #initial-quiz-size-input {
-        font-size: 1em;
-        padding: 10px;
-    }
-    #start-quiz-button {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-}
-@media (min-width: 768px) {
-    #round-indicator {
-        font-size: 1em;
-        margin-top: 15px;
-        margin-bottom: -15px;
-    }
-}
-
-/* メインコンテンツのラッパー */
-.main-content {
-    width: 100%;
-    max-width: 600px;
-    padding: 20px 10px;
-    box-sizing: border-box;
+/* クイズセクション */
+.quiz-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    margin: 0 auto;
 }
 
-/* 小さい画面でのmain-contentの調整 */
-@media (max-width: 480px) {
-    .main-content {
-        padding: 15px 5px;
-        max-width: none;
-    }
-}
-
-
-/* 問題文 (#question-text) の調整 */
-#question-text {
-    font-size: 5vw;
-    margin-bottom: 20px;
-    color: #333;
-    text-align: left;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    line-height: 1.5;
-    padding: 15px;
+.card {
     background-color: #e9f5ff;
+    border: 1px solid #b3e0ff;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 25px;
+    margin-bottom: 20px;
     width: 100%;
     box-sizing: border-box;
-}
-
-/* 小さい画面での#question-textの固定サイズ */
-@media (max-width: 480px) {
-    #question-text {
-        font-size: 18px;
-        margin-bottom: 15px;
-        padding: 12px;
-    }
-}
-/* PCでの#question-text */
-@media (min-width: 768px) {
-    #question-text {
-        font-size: 1.2em;
-        margin-bottom: 25px;
-        padding: 20px;
-    }
-}
-
-
-/* フォーム用スタイル (問題追加フォームのラベルや入力欄) */
-.form-group {
-    width: 100%;
-    margin-bottom: 10px;
-}
-.form-group label {
-    font-size: 4vw;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    display: block;
     text-align: left;
-    color: #555;
-    font-weight: bold;
-}
-@media (max-width: 480px) {
-    .form-group label {
-        font-size: 1em;
-        margin-top: 8px;
-        margin-bottom: 3px;
-    }
-}
-/* PCでのlabel */
-@media (min-width: 768px) {
-    .form-group label {
-        font-size: 1em;
-    }
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
-
-.form-group input[type="text"],
-.form-group textarea,
-.form-group select {
-    font-size: 4vw;
-    padding: 2.5vw;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-@media (max-width: 480px) {
-    .form-group input[type="text"],
-    .form-group textarea,
-    .form-group select {
-        padding: 8px;
-        font-size: 1em;
-    }
-}
-/* PCでのinput/textarea/select */
-@media (min-width: 768px) {
-    .form-group input[type="text"],
-    .form-group textarea,
-    .form-group select {
-        padding: 10px;
-        font-size: 1em;
-    }
+.question-text {
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    color: #2a2a2a;
+    line-height: 1.5;
 }
 
-.form-group textarea {
-    min-height: 80px;
-    max-height: 150px;
-    overflow-y: auto;
-    resize: vertical;
-}
-/* PCでのtextarea */
-@media (min-width: 768px) {
-    .form-group textarea {
-        min-height: 100px;
-        max-height: 200px;
-    }
-}
-
-
-/* 4択問題用のCSS */
-.options-grid {
-    gap: 15px;
-    margin-top: 20px;
-    flex-grow: 1;
+.options-container {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    width: 100%;
+    gap: 10px;
 }
-
 
 .option-button {
-    padding: 15px 20px;
-    font-size: 4.2vw;
-    line-height: 1.4;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    background-color: #ffffff;
-    color: #333;
-    cursor: pointer;
-    text-align: left;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.option-button:hover {
-    background-color: #f0f0f0;
-    border-color: #bbb;
-}
-
-/* 選択中の色を非常に明確に、かつデザインに合うように */
-.option-button.selected {
-    background-color: #ffd700; /* 強い黄色 */
-    border-color: #ccaa00; /* 黄色に合わせたボーダー */
-    font-weight: bold;
-    color: #333;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.option-button.correct-option {
-    background-color: #d4edda;
-    border-color: #28a745;
-    font-weight: bold;
-}
-.option-button.incorrect-option {
-    background-color: #f8d7da;
-    border-color: #dc3545;
-    font-weight: bold;
-}
-
-
-/* 小さい画面でのoption-buttonの固定サイズ */
-@media (max-width: 480px) {
-    .option-button {
-        padding: 12px 15px;
-        font-size: 16px;
-    }
-}
-/* PCでのoption-button */
-@media (min-width: 768px) {
-    .option-button {
-        padding: 18px 25px;
-        font-size: 1em;
-    }
-}
-
-
-/* アクションボタン群をまとめる新しいdiv */
-.quiz-buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-    width: 100%;
-}
-
-/* アクションボタン（解答する、次へ、問題を追加）の統一スタイル */
-.action-button, .action-button-toggle {
-    padding: 12px 20px;
-    font-size: 1.1em;
-    margin-top: 0;
-    width: 48%;
-    box-sizing: border-box;
+    background-color: #007bff;
+    color: white;
+    padding: 12px 15px;
     border: none;
     border-radius: 5px;
+    font-size: 1em;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    flex-shrink: 0;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.option-button:hover:not(:disabled) {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.option-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.option-button.correct {
+    background-color: #28a745; /* Green for correct */
+    color: white;
+    border: 2px solid #1e7e34;
+}
+
+.option-button.incorrect {
+    background-color: #dc3545; /* Red for incorrect */
+    color: white;
+    border: 2px solid #bd2130;
+}
+
+.option-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.result-area {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: left;
+    display: none; /* 初期は非表示 */
+}
+
+.feedback-text {
+    font-size: 1.2em;
     font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.explanation-text {
+    font-size: 1em;
+    color: #555;
+    line-height: 1.6;
+}
+
+.round-indicator {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.quiz-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .action-button {
     background-color: #007bff;
     color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
+
 .action-button:hover {
     background-color: #0056b3;
-    transform: translateY(-1px);
-}
-.action-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
 }
 
-.action-button-toggle { /* 問題追加ボタン */
+.action-button.restart-button {
     background-color: #6c757d;
+}
+
+.action-button.restart-button:hover {
+    background-color: #545b62;
+}
+
+.admin-action-button {
+    background-color: #28a745;
     color: white;
-    margin-top: 20px;
-    width: auto;
-    padding: 12px 25px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.action-button-toggle:hover {
-    background-color: #5a6268;
-    transform: translateY(-1px);
-}
-
-/* スキップボタンのスタイル（リンク風） */
-.action-button-link {
-    background: none;
+    padding: 10px 20px;
     border: none;
-    color: #007bff;
-    text-decoration: underline;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
-    padding: 8px 15px;
-    margin-top: 0;
-    width: auto;
-    flex-shrink: 0;
-}
-.action-button-link:hover {
-    color: #0056b3;
-}
-.action-button-link:disabled {
-    color: #ccc;
-    cursor: not-allowed;
+    margin: 10px 5px;
+    transition: background-color 0.3s ease;
 }
 
-
-/* PCでのアクションボタンの最大サイズ */
-@media (min-width: 768px) {
-    .action-button, .action-button-toggle {
-        padding: 15px 30px;
-        font-size: 1.1em;
-        width: auto;
-    }
-    .action-button-toggle {
-        margin-top: 30px;
-    }
-    .action-button-link {
-        padding: 10px 20px;
-        font-size: 1em;
-    }
-    .quiz-buttons {
-        justify-content: center;
-        gap: 20px;
-    }
+.admin-action-button:hover {
+    background-color: #218838;
 }
 
-
-#result-area {
-    margin-top: 25px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-    text-align: left;
+/* 管理者パネル */
+.admin-panel, .add-question-form-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 20px;
     width: 100%;
     box-sizing: border-box;
-}
-
-#feedback-text {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: #28a745;
-}
-#feedback-text.incorrect {
-    color: #dc3545;
-}
-
-
-#explanation-text {
-    font-size: 1em;
-    white-space: pre-wrap;
     text-align: left;
-    word-wrap: break-word;
-    line-height: 1.6;
-    padding-right: 0;
-    -webkit-overflow-scrolling: auto;
-    color: #444;
 }
 
-/* 小さい画面でのfeedback-textとexplanation-textの固定サイズ */
-@media (max-width: 480px) {
-    #feedback-text {
-        font-size: 1.1em;
-        margin-bottom: 8px;
-    }
-    #explanation-text {
-        font-size: 0.95em;
-    }
-}
-/* PCでのfeedback-textとexplanation-text */
-@media (min-width: 768px) {
-    #feedback-text {
-        font-size: 1.2em;
-        margin-bottom: 12px;
-    }
-    #explanation-text {
-        font-size: 1.05em;
-    }
+.admin-panel h2, .add-question-form-section h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #0056b3;
 }
 
-/* 問題追加フォームセクションの調整 */
-#add-question-form-section {
-    flex-grow: 1;
+.admin-buttons, .form-buttons {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-bottom: 20px;
-    overflow-y: auto;
-    max-height: calc(100vh - 80px);
+    flex-wrap: wrap; /* ボタンが複数行になっても対応 */
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.question-list {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
     padding-top: 20px;
 }
 
-/* 小さい画面での問題追加フォームの固定サイズ */
-@media (max-width: 480px) {
-    #add-question-form-section {
-        max-height: calc(100vh - 60px);
-        padding-top: 15px;
-        padding-bottom: 15px;
-    }
-}
-/* PCでの問題追加フォームの最大高さを固定 */
-@media (min-width: 768px) {
-    #add-question-form-section {
-        max-height: 500px;
-        padding-top: 25px;
-        padding-bottom: 25px;
-    }
+.question-item {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
 }
 
-/* スクロールバーのカスタマイズ（textareaと問題追加フォームセクション用） */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+.question-item p {
+    margin-bottom: 8px;
+    line-height: 1.5;
 }
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+
+.question-item ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 5px;
+    margin-bottom: 10px;
 }
-::-webkit-scrollbar-thumb {
-    background: #aaa;
-    border-radius: 10px;
+
+.question-item ul li {
+    background-color: #f0f8ff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    border: 1px dashed #b3e0ff;
 }
-::-webkit-scrollbar-thumb:hover {
-    background: #777;
+
+.question-item strong {
+    color: #0056b3;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* 問題追加フォーム */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+    width: calc(100% - 22px); /* paddingとborder分を引く */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box; /* paddingとborderをwidthに含める */
+}
+
+.form-group textarea {
+    resize: vertical; /* 縦方向のみリサイズ可能 */
+    min-height: 80px;
+}
+
+/* フォーム内のボタン */
+.add-question-form-section .action-button {
+    background-color: #007bff;
+    margin-top: 15px;
+}
+
+.add-question-form-section .action-button:hover {
+    background-color: #0056b3;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    .option-button, .action-button, .admin-action-button {
+        font-size: 0.9em;
+        padding: 10px 15px;
+    }
+
+    .quiz-buttons, .admin-buttons, .form-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
 }

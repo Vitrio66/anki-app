@@ -3,84 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暗記アプリ</title>
+    <title>暗記クイズアプリ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="quiz-size-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2>出題数を設定</h2>
-            <p>初回に出題する問題数を入力してください。</p>
-            <input type="number" id="initial-quiz-size-input" value="10" min="1" step="1">
-            <button id="start-quiz-button" class="action-button">クイズを開始</button>
-        </div>
-    </div>
+    <div class="container">
+        <h1>暗記クイズアプリ</h1>
 
-    <div id="round-indicator"></div>
-
-    <div id="quiz-section" class="main-content" style="display: none;">
-        <p id="question-text"></p>
-
-        <div id="options-container" class="options-grid">
+        <div id="quiz-size-modal" class="modal">
+            <div class="modal-content">
+                <h2>クイズ開始設定</h2>
+                <p>何問出題しますか？ (全体の問題数: <span id="total-questions-count">読み込み中...</span>)</p>
+                <input type="number" id="initial-quiz-size-input" value="10" min="1">
+                <button id="start-quiz-button">クイズ開始</button>
             </div>
-
-        <div id="result-area">
-            <p id="feedback-text"></p>
-            <p id="explanation-text"></p>
         </div>
 
-        <div class="quiz-buttons">
-            <button id="skip-button" class="action-button-link">回答をスキップする</button>
-            <button id="submit-answer-button" class="action-button">解答する</button>
-            <button id="next-button" class="action-button">次の問題へ</button>
+        <div id="quiz-section" class="quiz-section" style="display: none;">
+            <p id="round-indicator" class="round-indicator">1周目 (1/10)</p>
+            <div class="card">
+                <p id="question-text" class="question-text">問題文がここに表示されます。</p>
+                <div id="options-container" class="options-container">
+                    <button class="option-button">選択肢 1</button>
+                    <button class="option-button">選択肢 2</button>
+                    <button class="option-button">選択肢 3</button>
+                    <button class="option-button">選択肢 4</button>
+                </div>
+                <div id="result-area" class="result-area">
+                    <p id="feedback-text" class="feedback-text"></p>
+                    <p id="explanation-text" class="explanation-text"></p>
+                </div>
+            </div>
+            <div class="quiz-buttons">
+                <button id="submit-answer-button" class="action-button" style="display: none;">次の問題へ</button>
+                <button id="skip-button" class="action-button">スキップ</button>
+                <button id="restart-quiz-button" class="action-button restart-button">最初からやり直す</button>
+            </div>
+        </div>
+
+        <button id="show-add-question-form-button" class="admin-action-button" style="display: none;">問題を追加</button>
+
+        <button id="admin-mode-button" class="admin-action-button">管理者モード</button>
+
+        <div id="admin-panel" class="admin-panel" style="display: none;">
+            <h2>管理者パネル</h2>
+            <div class="admin-buttons">
+                <button id="show-add-question-form-button-admin" class="action-button">新しい問題を追加</button>
+                <button id="back-to-quiz-from-admin-button" class="action-button">クイズに戻る</button>
+                <button id="close-admin-panel-button" class="action-button">管理者パネルを閉じる</button>
+            </div>
+            <h3>登録されている問題一覧</h3>
+            <div id="question-list" class="question-list">
+                </div>
+        </div>
+
+        <div id="add-question-form-section" class="add-question-form-section" style="display: none;">
+            <h2>新しい問題の追加</h2>
+            <form id="add-question-form">
+                <div class="form-group">
+                    <label for="new-question-text">問題文:</label>
+                    <textarea id="new-question-text" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>選択肢 (少なくとも2つ入力):</label>
+                    <input type="text" id="new-option-1" placeholder="選択肢 1" required>
+                    <input type="text" id="new-option-2" placeholder="選択肢 2" required>
+                    <input type="text" id="new-option-3" placeholder="選択肢 3 (任意)">
+                    <input type="text" id="new-option-4" placeholder="選択肢 4 (任意)">
+                </div>
+                <div class="form-group">
+                    <label for="new-correct-answer">正解:</label>
+                    <input type="text" id="new-correct-answer" placeholder="正解の選択肢を正確に入力" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-explanation">解説:</label>
+                    <textarea id="new-explanation" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="new-category">カテゴリ:</label>
+                    <select id="new-category">
+                        <option value="計画">計画</option>
+                        <option value="分析">分析</option>
+                        <option value="設計">設計</option>
+                        <option value="実装">実装</option>
+                        <option value="テスト">テスト</option>
+                        <option value="保守">保守</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="action-button">問題を追加する</button>
+                    <button type="button" id="request-add-question-button" class="action-button">問題追加を依頼</button>
+                </div>
+            </form>
+            <button id="back-to-quiz-from-add-form-button" class="action-button">クイズに戻る</button>
+            <button id="close-add-question-form-button" class="action-button">フォームを閉じる</button>
         </div>
     </div>
-
-    <div id="add-question-form-section" class="main-content" style="display: none;">
-        <h2>新しい問題を追加</h2>
-        <div class="form-group">
-            <label for="new-question-text">問題文:</label>
-            <textarea id="new-question-text" rows="3" placeholder="ここに問題文を入力してください"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="new-option-1">選択肢1:</label>
-            <input type="text" id="new-option-1" class="new-option-input" placeholder="選択肢1">
-        </div>
-        <div class="form-group">
-            <label for="new-option-2">選択肢2:</label>
-            <input type="text" id="new-option-2" class="new-option-input" placeholder="選択肢2">
-        </div>
-        <div class="form-group">
-            <label for="new-option-3">選択肢3:</label>
-            <input type="text" id="new-option-3" class="new-option-input" placeholder="選択肢3">
-        </div>
-        <div class="form-group">
-            <label for="new-option-4">選択肢4:</label>
-            <input type="text" id="new-option-4" class="new-option-input" placeholder="選択肢4">
-        </div>
-        <div class="form-group">
-            <label for="new-correct-answer">正解の選択肢（上記と同じ内容で入力）:</label>
-            <input type="text" id="new-correct-answer" placeholder="ここに正解を入力してください">
-        </div>
-        <div class="form-group">
-            <label for="new-explanation">解説:</label>
-            <textarea id="new-explanation" rows="3" placeholder="ここに解説を入力してください"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="new-category">カテゴリ:</label>
-            <select id="new-category">
-                <option value="計画">計画</option>
-                <option value="環境設備">環境設備</option>
-                <option value="構造">構造</option>
-                <option value="法規">法規</option>
-                <option value="その他">その他</option>
-            </select>
-        </div>
-        <button id="add-question-button" class="action-button">問題を追加する</button>
-        <button id="hide-add-question-form-button" class="action-button-link">キャンセル</button>
-    </div>
-    
-    <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
 
     <script src="script.js"></script>
 </body>
