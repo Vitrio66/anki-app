@@ -13,6 +13,7 @@ let currentQuestion;
 let selectedOptionText = null;
 
 // --- UI要素の取得 ---
+const quizSection = document.getElementById('quiz-section'); // ★追加: クイズセクション全体
 const questionText = document.getElementById('question-text');
 const optionsContainer = document.getElementById('options-container');
 const submitAnswerButton = document.getElementById('submit-answer-button');
@@ -21,6 +22,7 @@ const feedbackText = document.getElementById('feedback-text');
 const explanationText = document.getElementById('explanation-text');
 const nextButton = document.getElementById('next-button');
 const skipButton = document.getElementById('skip-button');
+const quizButtonsContainer = document.querySelector('.quiz-buttons'); // ★変更: ボタンをまとめる新しいコンテナ
 
 // 問題追加フォーム関連のUI要素
 const showAddQuestionFormButton = document.getElementById('show-add-question-form-button');
@@ -132,6 +134,7 @@ async function loadAndInitializeQuestions() {
         nextButton.style.display = 'none';
         skipButton.style.display = 'none';
         resultArea.style.display = 'none';
+        quizButtonsContainer.style.display = 'none'; // ★追加: ボタンコンテナも非表示
         showAddQuestionFormButton.style.display = 'inline-block'; // 問題追加ボタンは常に表示
         return false; // 問題がないことを示す
     }
@@ -163,13 +166,13 @@ async function fetchQuestionsFromGitHub() {
 // 問題と選択肢を画面に表示する
 function displayQuestion() {
     if (allQuestions.length === 0) {
-        // ロード時に問題がない場合はここで表示されるので、重複はしないが念のため
         questionText.textContent = "現在、問題がありません。新しい問題を追加してください。";
         optionsContainer.innerHTML = '';
         submitAnswerButton.style.display = 'none';
         nextButton.style.display = 'none';
         skipButton.style.display = 'none';
         resultArea.style.display = 'none';
+        quizButtonsContainer.style.display = 'none'; // ★追加: ボタンコンテナも非表示
         showAddQuestionFormButton.style.display = 'inline-block';
         return;
     }
@@ -183,18 +186,19 @@ function displayQuestion() {
     feedbackText.textContent = '';
     explanationText.textContent = '';
     resultArea.classList.remove('correct', 'incorrect');
-    resultArea.style.display = 'block';
+    resultArea.style.display = 'none'; // ★調整: 最初は非表示
     nextButton.style.display = 'none';
     submitAnswerButton.style.display = 'inline-block';
     skipButton.style.display = 'inline-block';
     optionsContainer.style.pointerEvents = 'auto';
     clearOptionSelection(); // 以前の選択状態を確実にクリア
+    quizButtonsContainer.style.display = 'flex'; // ★追加: ボタンコンテナを表示
 
     const shuffledOptions = shuffleArray([...currentQuestion.options]);
 
     shuffledOptions.forEach((option, index) => {
         const button = document.createElement('button');
-        button.textContent = `${index + 1}. ${option}`;
+        button.textContent = `${index + 1}. ${option}`; // ★変更: 1. 選択肢 の形式
         button.dataset.option = option;
         button.classList.add('option-button');
 
@@ -242,6 +246,7 @@ function checkAnswer() {
         addMistakenQuestion(currentQuestion);
     }
     explanationText.textContent = `正解は「${correctAnswer}」です。\n${currentQuestion.explanation}`;
+    resultArea.style.display = 'block'; // ★調整: 回答結果を表示
 
     submitAnswerButton.style.display = 'none';
     skipButton.style.display = 'none';
@@ -258,6 +263,8 @@ nextButton.addEventListener('click', () => {
     currentQuestionIndex++;
     if (currentQuestionIndex < allQuestions.length) {
         displayQuestion();
+        // ★追加: 次の問題へ行った時に一番上に戻す (長い問題の場合に有効)
+        window.scrollTo(0, 0); 
     } else {
         questionText.textContent = "全ての質問が終了しました！";
         optionsContainer.innerHTML = '';
@@ -266,9 +273,11 @@ nextButton.addEventListener('click', () => {
         skipButton.style.display = 'none';
         nextButton.style.display = 'none';
         resultArea.style.display = 'none';
+        quizButtonsContainer.style.display = 'none'; // ★追加: ボタンコンテナも非表示
 
         alert(`今回の学習で間違えた問題は ${mistakenQuestions.length} 問です。`);
         showAddQuestionFormButton.style.display = 'inline-block'; // 全ての問題が終わったら問題追加ボタンを表示
+        window.scrollTo(0, 0); // ★追加: 全ての問題が終わったら一番上に戻す
     }
 });
 
@@ -276,12 +285,7 @@ nextButton.addEventListener('click', () => {
 showAddQuestionFormButton.addEventListener('click', () => {
     addQuestionFormSection.style.display = 'block';
     // クイズ画面の要素を全て非表示
-    questionText.style.display = 'none';
-    optionsContainer.style.display = 'none';
-    submitAnswerButton.style.display = 'none';
-    nextButton.style.display = 'none';
-    skipButton.style.display = 'none';
-    resultArea.style.display = 'none';
+    quizSection.style.display = 'none'; // ★変更: クイズセクション全体を非表示
     showAddQuestionFormButton.style.display = 'none'; // このボタン自体も隠す
 
     // フォームの入力欄をクリア
@@ -290,19 +294,21 @@ showAddQuestionFormButton.addEventListener('click', () => {
     newExplanation.value = '';
     newCategory.value = '計画';
     newOptionInputs.forEach(input => input.value = '');
+
+    window.scrollTo(0, 0); // ★追加: フォームに切り替わる時も一番上に戻す
 });
 
 // 「キャンセル」ボタン（問題追加フォームを隠す）
 hideAddQuestionFormButton.addEventListener('click', () => {
     addQuestionFormSection.style.display = 'none';
     // クイズ画面の要素を表示に戻す
-    questionText.style.display = 'block';
-    optionsContainer.style.display = 'grid';
+    quizSection.style.display = 'block'; // ★変更: クイズセクション全体を表示
     showAddQuestionFormButton.style.display = 'inline-block';
-    resultArea.style.display = 'block'; // 結果エリアも表示に戻す（次の問題へ押す前なら）
+    resultArea.style.display = 'none'; // キャンセル時は回答結果を非表示に戻す
 
     // 現在の問題から再開
     displayQuestion();
+    window.scrollTo(0, 0); // ★追加: クイズに戻る時も一番上に戻す
 });
 
 // 「問題を追加する」ボタン（問題追加フォームから）
@@ -349,6 +355,7 @@ addQuestionButton.addEventListener('click', () => {
     currentQuestionIndex = 0; // 最初の問題に戻す
     displayQuestion();
     showAddQuestionFormButton.style.display = 'inline-block';
+    window.scrollTo(0, 0); // ★追加: 問題追加後も一番上に戻す
 });
 
 // --- アプリ初期化 ---
@@ -360,6 +367,7 @@ async function initializeApp() {
         mistakenQuestions = loadMistakenQuestions();
         displayQuestion();
     }
+    window.scrollTo(0, 0); // ★追加: 初期ロード時にも一番上に戻す
 }
 
 initializeApp(); // アプリを初期化する

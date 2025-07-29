@@ -3,65 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暗記アプリ</title>
-    <link rel="stylesheet" href="style.css">
+    <title>暗記アプリ</title> <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>暗記アプリ</h1>
+        <div id="quiz-section">
+            <p id="question-text"></p>
 
-        <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
+            <div id="options-container" class="options-grid">
+                </div>
 
-        <div id="add-question-form-section" style="display:none; text-align: left; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+            <div id="result-area">
+                <p id="feedback-text"></p>
+                <p id="explanation-text"></p>
+            </div>
+
+            <div class="quiz-buttons">
+                <button id="skip-button" class="action-button-link">回答をスキップする</button>
+                <button id="submit-answer-button" class="action-button">解答する</button>
+                <button id="next-button" class="action-button">次の問題へ</button>
+            </div>
+        </div>
+
+        <div id="add-question-form-section" style="display: none;">
             <h2>新しい問題を追加</h2>
             <div class="form-group">
                 <label for="new-question-text">問題文:</label>
-                <textarea id="new-question-text" rows="4" placeholder="問題文を入力してください"></textarea>
+                <textarea id="new-question-text" rows="3" placeholder="ここに問題文を入力してください"></textarea>
             </div>
             <div class="form-group">
-                <label for="new-correct-answer">正解:</label>
-                <input type="text" id="new-correct-answer" placeholder="正解を入力してください">
+                <label for="new-option-1">選択肢1:</label>
+                <input type="text" id="new-option-1" class="new-option-input" placeholder="選択肢1">
+            </div>
+            <div class="form-group">
+                <label for="new-option-2">選択肢2:</label>
+                <input type="text" id="new-option-2" class="new-option-input" placeholder="選択肢2">
+            </div>
+            <div class="form-group">
+                <label for="new-option-3">選択肢3:</label>
+                <input type="text" id="new-option-3" class="new-option-input" placeholder="選択肢3">
+            </div>
+            <div class="form-group">
+                <label for="new-option-4">選択肢4:</label>
+                <input type="text" id="new-option-4" class="new-option-input" placeholder="選択肢4">
+            </div>
+            <div class="form-group">
+                <label for="new-correct-answer">正解の選択肢（上記と同じ内容で入力）:</label>
+                <input type="text" id="new-correct-answer" placeholder="ここに正解を入力してください">
             </div>
             <div class="form-group">
                 <label for="new-explanation">解説:</label>
-                <textarea id="new-explanation" rows="3" placeholder="解説を入力してください"></textarea>
+                <textarea id="new-explanation" rows="3" placeholder="ここに解説を入力してください"></textarea>
             </div>
             <div class="form-group">
-                <label for="new-category">カテゴリー:</label>
+                <label for="new-category">カテゴリ:</label>
                 <select id="new-category">
                     <option value="計画">計画</option>
                     <option value="環境設備">環境設備</option>
-                    <option value="法規">法規</option>
                     <option value="構造">構造</option>
-                    <option value="施工">施工</option>
+                    <option value="法規">法規</option>
                     <option value="その他">その他</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label>選択肢 (4つ全て入力):</label>
-                <input type="text" class="new-option-input" placeholder="選択肢1 (正解を含む)">
-                <input type="text" class="new-option-input" placeholder="選択肢2">
-                <input type="text" class="new-option-input" placeholder="選択肢3">
-                <input type="text" class="new-option-input" placeholder="選択肢4">
             </div>
             <button id="add-question-button" class="action-button">問題を追加する</button>
             <button id="hide-add-question-form-button" class="action-button-link">キャンセル</button>
         </div>
-        <p id="question-text">問題文がここに表示されます。</p>
-
-        <div id="options-container" class="options-grid">
-            </div>
-
-        <button id="submit-answer-button" class="action-button">解答する</button>
-
-        <div id="result-area">
-            <p id="feedback-text"></p>
-            <p id="explanation-text"></p>
-        </div>
-        <button id="next-button" style="display:none;" class="action-button">次の問題へ</button>
-
-        <button id="skip-button" class="action-button-link" style="margin-top: 10px;">解答をスキップする</button>
-
+        
+        <button id="show-add-question-form-button" class="action-button-toggle">問題を追加</button>
     </div>
 
     <script src="script.js"></script>
