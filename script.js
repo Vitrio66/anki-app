@@ -294,6 +294,7 @@ function displayQuestion() {
 
     // ★修正点1: 「解答する」ボタンを初期状態で無効にする
     submitAnswerButton.disabled = true; 
+    console.log("displayQuestion: 解答ボタンを無効にしました。", submitAnswerButton.disabled); // ★追加
 
     const shuffledOptions = shuffleArray([...currentQuestion.options]);
 
@@ -309,6 +310,7 @@ function displayQuestion() {
             selectedOptionText = option;
             // ★修正点2: 選択肢が選ばれたら「解答する」ボタンを有効にする
             submitAnswerButton.disabled = false; 
+            console.log("選択肢がクリックされました。解答ボタンを有効にしました。", submitAnswerButton.disabled); // ★追加
         });
         optionsContainer.appendChild(button);
     });
