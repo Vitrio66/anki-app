@@ -3,64 +3,87 @@
 body {
     font-family: sans-serif;
     display: flex;
-    flex-direction: column; /* 要素を縦に並べる */
-    justify-content: flex-start; /* 上から配置 */
-    align-items: center; /* 水平方向の中央揃え */
-    min-height: 100vh; /* 常に最低でも画面高さ分は確保 */
-    background-color: #f4f4f4; /* 背景色を維持 */
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
     margin: 0;
-    padding: 0; /* bodyのパディングをゼロにする */
+    padding: 0;
     box-sizing: border-box;
-    overflow-y: auto; /* bodyに縦スクロールを明示的に許可 */
-    -webkit-overflow-scrolling: touch; /* iOSでスムーズなスクロール */
-    width: 100%; /* 全幅を使用 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+/* 周回表示のスタイル */
+#round-indicator {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: -10px; /* main-contentとの間隔を詰める */
+    text-align: center;
+    width: 100%;
+    display: none; /* 初期状態では非表示 */
+}
+@media (max-width: 480px) {
+    #round-indicator {
+        font-size: 0.8em;
+        margin-top: 8px;
+        margin-bottom: -8px;
+    }
+}
+@media (min-width: 768px) {
+    #round-indicator {
+        font-size: 1em;
+        margin-top: 15px;
+        margin-bottom: -15px;
+    }
 }
 
 /* メインコンテンツのラッパー */
 .main-content {
-    width: 100%; /* 画面幅いっぱいに広げる */
-    max-width: 600px; /* PCなど広い画面での最大幅を調整 */
-    padding: 20px 10px; /* 上下左右のパディングを調整 */
+    width: 100%;
+    max-width: 600px;
+    padding: 20px 10px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: center; /* 内部要素を中央に */
+    align-items: center;
     justify-content: flex-start;
-    /* 背景色や影はbodyと要素自体で設定するため、ここでは削除 */
-    /* border-radius, box-shadow, background-color は削除 */
-    margin: 0 auto; /* 中央寄せ */
+    margin: 0 auto;
 }
 
 /* 小さい画面でのmain-contentの調整 */
 @media (max-width: 480px) {
     .main-content {
-        padding: 15px 5px; /* モバイルでは左右のパディングをさらに狭く */
-        max-width: none; /* モバイルでは最大幅の制限をなくす */
+        padding: 15px 5px;
+        max-width: none;
     }
 }
 
 
 /* 問題文 (#question-text) の調整 */
 #question-text {
-    font-size: 5vw; /* ★調整: 画面幅に応じて大きくする */
-    margin-bottom: 20px; /* ★調整: マージンを増やす */
+    font-size: 5vw;
+    margin-bottom: 20px;
     color: #333;
-    text-align: left; /* ★調整: 左寄せ */
+    text-align: left;
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.5; /* ★調整: 行の高さを広げる */
-    padding: 15px; /* ★調整: パディングを増やす */
-    background-color: #e9f5ff; /* 背景色をつけて目立たせる */
-    border-radius: 8px; /* 角丸を大きくする */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 影を強調 */
-    width: 100%; /* 全幅に広げる */
+    line-height: 1.5;
+    padding: 15px;
+    background-color: #e9f5ff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
     box-sizing: border-box;
 }
 
 /* 小さい画面での#question-textの固定サイズ */
 @media (max-width: 480px) {
     #question-text {
-        font-size: 18px; /* ★調整: スマホでの固定サイズ */
+        font-size: 18px;
         margin-bottom: 15px;
         padding: 12px;
     }
@@ -77,11 +100,11 @@ body {
 
 /* フォーム用スタイル (問題追加フォームのラベルや入力欄) */
 .form-group {
-    width: 100%; /* フォームグループも全幅に */
-    margin-bottom: 10px; /* グループ間のマージン */
+    width: 100%;
+    margin-bottom: 10px;
 }
 .form-group label {
-    font-size: 4vw; /* ★調整 */
+    font-size: 4vw;
     margin-top: 10px;
     margin-bottom: 5px;
     display: block;
@@ -107,9 +130,9 @@ body {
 .form-group input[type="text"],
 .form-group textarea,
 .form-group select {
-    font-size: 4vw; /* ★調整 */
-    padding: 2.5vw; /* ★調整 */
-    width: 100%; /* 全幅を使用 */
+    font-size: 4vw;
+    padding: 2.5vw;
+    width: 100%;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
@@ -118,8 +141,8 @@ body {
     .form-group input[type="text"],
     .form-group textarea,
     .form-group select {
-        padding: 8px; /* ★調整 */
-        font-size: 1em; /* ★調整 */
+        padding: 8px;
+        font-size: 1em;
     }
 }
 /* PCでのinput/textarea/select */
@@ -133,8 +156,8 @@ body {
 }
 
 .form-group textarea {
-    min-height: 80px; /* ★調整: 最小高さを増やす */
-    max-height: 150px; /* ★調整: 最大高さを増やす */
+    min-height: 80px;
+    max-height: 150px;
     overflow-y: auto;
     resize: vertical;
 }
@@ -149,30 +172,30 @@ body {
 
 /* 4択問題用のCSS */
 .options-grid {
-    gap: 15px; /* ★調整: 選択肢間のギャップを広げる */
-    margin-top: 20px; /* ★調整: 上のマージンを広げる */
+    gap: 15px;
+    margin-top: 20px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%; /* ★調整: 全幅を使用 */
+    width: 100%;
 }
 
 
 .option-button {
-    padding: 15px 20px; /* ★調整: パディングを大きくする */
-    font-size: 4.2vw; /* ★調整: フォントサイズを大きくする */
+    padding: 15px 20px;
+    font-size: 4.2vw;
     line-height: 1.4;
-    border: 2px solid #ddd; /* ★調整: ボーダーを少し太く */
-    border-radius: 8px; /* ★調整: 角丸を大きくする */
-    background-color: #ffffff; /* 背景色を白に */
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
     color: #333;
     cursor: pointer;
     text-align: left;
     width: 100%;
     box-sizing: border-box;
     transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* 影を追加 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .option-button:hover {
@@ -180,14 +203,14 @@ body {
     border-color: #bbb;
 }
 
-/* ★修正: 選択中の色を非常に明確に、かつデザインに合うように */
+/* 選択中の色を非常に明確に、かつデザインに合うように */
 .option-button.selected {
     background-color: #ffd700; /* 強い黄色 */
     border-color: #ccaa00; /* 黄色に合わせたボーダー */
     font-weight: bold;
     color: #333;
-    transform: translateY(-3px); /* 少し大きく浮き上がる */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* 影を強調 */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .option-button.correct-option {
@@ -205,8 +228,8 @@ body {
 /* 小さい画面でのoption-buttonの固定サイズ */
 @media (max-width: 480px) {
     .option-button {
-        padding: 12px 15px; /* ★調整 */
-        font-size: 16px; /* ★調整 */
+        padding: 12px 15px;
+        font-size: 16px;
     }
 }
 /* PCでのoption-button */
@@ -222,18 +245,18 @@ body {
 .quiz-buttons {
     display: flex;
     justify-content: space-around;
-    margin-top: 25px; /* ★調整: マージンをさらに増やす */
+    margin-top: 25px;
     flex-wrap: wrap;
-    gap: 15px; /* ボタン間のギャップ */
-    width: 100%; /* 全幅を使用 */
+    gap: 15px;
+    width: 100%;
 }
 
 /* アクションボタン（解答する、次へ、問題を追加）の統一スタイル */
 .action-button, .action-button-toggle {
-    padding: 12px 20px; /* ★調整: ボタンのパディングを増やす */
-    font-size: 1.1em; /* ★調整: フォントサイズを増やす */
+    padding: 12px 20px;
+    font-size: 1.1em;
     margin-top: 0;
-    width: 48%; /* 横並びにするために幅を調整 */
+    width: 48%;
     box-sizing: border-box;
     border: none;
     border-radius: 5px;
@@ -259,9 +282,9 @@ body {
 .action-button-toggle { /* 問題追加ボタン */
     background-color: #6c757d;
     color: white;
-    margin-top: 20px; /* クイズセクションのボタンとは独立したマージン */
-    width: auto; /* 幅を自動調整 */
-    padding: 12px 25px; /* ★調整 */
+    margin-top: 20px;
+    width: auto;
+    padding: 12px 25px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .action-button-toggle:hover {
@@ -276,8 +299,8 @@ body {
     color: #007bff;
     text-decoration: underline;
     cursor: pointer;
-    font-size: 1em; /* ★調整 */
-    padding: 8px 15px; /* ★調整 */
+    font-size: 1em;
+    padding: 8px 15px;
     margin-top: 0;
     width: auto;
     flex-shrink: 0;
@@ -313,31 +336,31 @@ body {
 
 
 #result-area {
-    margin-top: 25px; /* ★調整: マージンを増やす */
-    padding-top: 15px; /* ★調整: paddingを増やす */
+    margin-top: 25px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
     text-align: left;
-    width: 100%; /* 全幅を使用 */
+    width: 100%;
     box-sizing: border-box;
 }
 
 #feedback-text {
-    font-size: 1.2em; /* ★調整: 大きくする */
-    margin-bottom: 10px; /* ★調整: マージンを増やす */
+    font-size: 1.2em;
+    margin-bottom: 10px;
     font-weight: bold;
-    color: #28a745; /* デフォルトで緑色に設定 */
+    color: #28a745;
 }
 #feedback-text.incorrect {
-    color: #dc3545; /* 不正解なら赤色 */
+    color: #dc3545;
 }
 
 
 #explanation-text {
-    font-size: 1em; /* ★調整: フォントサイズを大きくする */
+    font-size: 1em;
     white-space: pre-wrap;
     text-align: left;
     word-wrap: break-word;
-    line-height: 1.6; /* ★調整: 行の高さを広げる */
+    line-height: 1.6;
     padding-right: 0;
     -webkit-overflow-scrolling: auto;
     color: #444;
@@ -370,16 +393,16 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-bottom: 20px; /* ★調整: 下部のパディングを増やす */
-    overflow-y: auto; /* 問題追加フォームが長い場合のみスクロール */
-    max-height: calc(100vh - 80px); /* ビューポート高からボタン類を引いた高さ */
-    padding-top: 20px; /* フォームの上部にパディング */
+    padding-bottom: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+    padding-top: 20px;
 }
 
 /* 小さい画面での問題追加フォームの固定サイズ */
 @media (max-width: 480px) {
     #add-question-form-section {
-        max-height: calc(100vh - 60px); /* ★調整: スマホでの高さをより広く */
+        max-height: calc(100vh - 60px);
         padding-top: 15px;
         padding-bottom: 15px;
     }
@@ -387,7 +410,7 @@ body {
 /* PCでの問題追加フォームの最大高さを固定 */
 @media (min-width: 768px) {
     #add-question-form-section {
-        max-height: 500px; /* ★調整: PCでの最大高さを増やす */
+        max-height: 500px;
         padding-top: 25px;
         padding-bottom: 25px;
     }
@@ -395,7 +418,7 @@ body {
 
 /* スクロールバーのカスタマイズ（textareaと問題追加フォームセクション用） */
 ::-webkit-scrollbar {
-    width: 8px; /* ★調整: 幅を少し広く */
+    width: 8px;
     height: 8px;
 }
 ::-webkit-scrollbar-track {
@@ -403,7 +426,7 @@ body {
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-    background: #aaa; /* ★調整: 色を少し明るく */
+    background: #aaa;
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
